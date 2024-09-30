@@ -1,5 +1,6 @@
 package com.dulno.gitlab;
 
+import com.dulno.core.account.AccountLinkEntry;
 import com.dulno.gitlab.structure.GitlabDatabaseTable;
 import lombok.RequiredArgsConstructor;
 import com.dulno.core.account.AccountLink;
@@ -18,9 +19,12 @@ public final class GitlabAccountLink implements AccountLink {
   }
 
   @Override
-  public CompletableFuture<List<String>> findAccounts(UUID id) {
-    return gitlabDatabaseTable.findGitlabsOfOwner(id).thenApply(gitlabs ->
-      gitlabs.stream().map(gitlab -> gitlab.id().toString()).toList());
+  public CompletableFuture<List<AccountLinkEntry>> findAccounts(UUID id) {
+    return gitlabDatabaseTable.findGitlabsOfOwner(id)
+      .thenApply(gitlabs -> gitlabs.stream()
+        .map(gitlab -> AccountLinkEntry.create(gitlab.id().toString(),
+          gitlab.hostname()))
+        .toList());
   }
 
   @Override
