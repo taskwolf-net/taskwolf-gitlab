@@ -40,6 +40,8 @@ public final class GitlabRequest {
     var requestBuilder = HttpRequest.newBuilder().uri(URI.create(
         "https://" + gitlab.hostname() + url))
       .method(method, HttpRequest.BodyPublishers.ofString(body));
+    requestBuilder.setHeader("Authorization", "Bearer " + gitlab.accessToken());
+    requestBuilder.setHeader("Content-Type", "application/json");
     var httpRequest = requestBuilder.build();
     return httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString())
       .thenApply(response -> new JSONObject(response.body()).toMap());

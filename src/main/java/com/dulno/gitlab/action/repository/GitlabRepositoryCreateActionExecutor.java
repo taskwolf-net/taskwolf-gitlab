@@ -34,7 +34,7 @@ public final class GitlabRepositoryCreateActionExecutor implements ActionExecuto
     var body = Map.<String, Object>of("name", repositoryName,
       "visibility", visibility, "initialize_with_readme", false);
     return gitlabRequestFactory.create(gitlabId)
-      .send("https://gitlab.com/api/v4/projects", "POST", body).thenApply(result ->
+      .send("/api/v4/projects", "POST", body).thenApply(result ->
         ActionResult.success(buildInformation((int) result.get("id"))));
   }
 
