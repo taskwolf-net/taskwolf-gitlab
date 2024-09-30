@@ -24,7 +24,7 @@ public final class GitlabDatabaseTable extends DatabaseTable {
     columns.add(DatabaseColumn.create("application", DatabaseDataType.TEXT));
     columns.add(DatabaseColumn.create("secret", DatabaseDataType.TEXT));
     columns.add(DatabaseColumn.create("accessToken", DatabaseDataType.TEXT));
-    columns.add(DatabaseColumn.create("expiration", DatabaseDataType.TEXT));
+    columns.add(DatabaseColumn.create("expiration", DatabaseDataType.BIGINT));
     columns.add(DatabaseColumn.create("refreshToken", DatabaseDataType.TEXT));
     return new GitlabDatabaseTable(connection, keyspace, TABLE_NAME, columns);
   }
