@@ -46,11 +46,12 @@ public final class GitlabRequest {
   }
 
   private static final String GITLAB_REFRESH_URL = "https://%s/oauth/token";
+  private static final String GITLAB_TOKEN_BODY = "client_id=%s&" +
+    "client_secret=%s&refresh_token=%s&grant_type=refresh_token";
 
   private CompletableFuture<Void> refreshAccess(Gitlab gitlab) {
-    var payload = new JSONObject(Map.of("client_id", gitlab.applicationId(),
-      "client_secret", gitlab.secret(), "refresh_token", gitlab.refreshToken(),
-      "grant_type", "refresh_token")).toString();
+    var payload = String.format(GITLAB_TOKEN_BODY, gitlab.applicationId(),
+      gitlab.secret(), gitlab.refreshToken());
     var requestBuilder = HttpRequest.newBuilder().uri(URI.create(
         String.format(GITLAB_REFRESH_URL, gitlab.hostname())))
       .method("POST", HttpRequest.BodyPublishers.ofString(payload));

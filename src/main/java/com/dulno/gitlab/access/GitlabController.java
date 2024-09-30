@@ -54,12 +54,13 @@ public class GitlabController extends DulnoRestController {
     var body = DulnoRequestBody.of(payload, response);
     var hostname = body.getString("hostname").replace("/", "").replace(":", "")
       .replace("https", "").replace("http", "");
+    var apiKey = request.getHeader("Authorization").replace("Bearer ", "");
     return findUser(request)
       .thenCompose(user -> userTargetDatabaseTable.findTargetSecured(user.id())
         .thenCompose(target -> findGitlabOwner(user, target)
           .thenCompose(owner -> gitlabDatabaseTable.gitlabExists(owner, hostname)
             .thenCompose(gitlabExists -> addGitlab(owner, hostname,
-              body.getString("applicationId"), body.getString("secret"),
+              body.getString("applicationId"), body.getString("secret"), apiKey,
               gitlabExists)))));
   }
 
@@ -76,22 +77,23 @@ public class GitlabController extends DulnoRestController {
 
   private CompletableFuture<Map<String, Object>> addGitlab(
     UUID ownerId, String hostname, String applicationId, String secret,
-    boolean gitlabExists
+    String apiKey, boolean gitlabExists
   ) {
     if (gitlabExists) {
       return CompletableFuture.completedFuture(Map.of("success", false));
     }
-    return gitlabDatabaseTable.generateAvailableGitlabId()
-      .thenApply(id -> addGitlab(id, ownerId, hostname, applicationId, secret));
+    return gitlabDatabaseTable.generateAvailableGitlabId().thenApply(id ->
+      addGitlab(id, ownerId, hostname, applicationId, secret, apiKey));
   }
 
   private Map<String, Object> addGitlab(
-    UUID id, UUID ownerId, String hostname, String applicationId, String secret
+    UUID id, UUID ownerId, String hostname, String applicationId, String secret,
+    String apiKey
   ) {
     var type = hostname.contains("gitlab.com") ? GitlabType.OFFICIAL :
       GitlabType.SELF_HOSTED;
     var redirect = String.format(GITLAB_REDIRECT, hostname, applicationId,
-      id.toString());
+      apiKey + "DULNO-STATE-SPLIT" + id.toString());
     gitlabDatabaseTable.insertGitlab(id, ownerId, type, hostname,
       applicationId, secret, "", -1, "");
     return Map.of("success", true, "redirect", redirect);
@@ -99,13 +101,19 @@ public class GitlabController extends DulnoRestController {
 
   @RequestMapping(path = "/gitlab/authorize/", method = RequestMethod.GET)
   public void authorizeGitlab(
-    HttpServletRequest request, @RequestParam("code") String code,
-    @RequestParam("state") String state, HttpServletResponse response
+    @RequestParam("code") String code, @RequestParam("state") String state,
+    HttpServletResponse response
   ) throws Exception {
     response.sendRedirect("https://dulno.com/close/");
-    var gitlabId = UUID.fromString(state);
-    findUser(request).thenAccept(user -> gitlabDatabaseTable.exists(gitlabId)
-      .thenAccept(exists -> authorizeGitlab(user, gitlabId, code, exists)));
+    var split = state.split("DULNO-STATE-SPLIT");
+    var apiKey = split[0];
+    if (!isValidApiKey(apiKey)) {
+      return;
+    }
+    var gitlabId = UUID.fromString(split[1]);
+    userDatabaseTable().findUser(findUserId(apiKey))
+      .thenAccept(user -> gitlabDatabaseTable.exists(gitlabId)
+        .thenAccept(exists -> authorizeGitlab(user, gitlabId, code, exists)));
   }
 
   private void authorizeGitlab(
@@ -120,6 +128,9 @@ public class GitlabController extends DulnoRestController {
   }
 
   private static final String GITLAB_TOKEN_URL = "https://%s/oauth/token";
+  private static final String GITLAB_TOKEN_BODY = "client_id=%s&" +
+    "client_secret=%s&code=%s&grant_type=authorization_code&" +
+    "redirect_uri=https://api.dulno.com/v1/gitlab/authorize/";
 
   private void authorizeGitlab(
     Gitlab gitlab, String code, boolean hasAuthorization
@@ -127,10 +138,8 @@ public class GitlabController extends DulnoRestController {
     if (!hasAuthorization) {
       return;
     }
-    var payload = new JSONObject(Map.of("client_id", gitlab.applicationId(),
-      "client_secret", gitlab.secret(), "code", code,
-      "grant_type", "authorization_code",
-      "redirect_uri", "https://api.dulno.com/v1/gitlab/authorize/")).toString();
+    var payload = String.format(GITLAB_TOKEN_BODY, gitlab.applicationId(),
+      gitlab.secret(), code);
     var requestBuilder = HttpRequest.newBuilder().uri(URI.create(
       String.format(GITLAB_TOKEN_URL, gitlab.hostname())))
       .method("POST", HttpRequest.BodyPublishers.ofString(payload));
