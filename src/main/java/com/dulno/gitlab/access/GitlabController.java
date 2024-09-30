@@ -71,7 +71,7 @@ public class GitlabController extends DulnoRestController {
   }
 
   private static final String GITLAB_REDIRECT = "https://%s/oauth/authorize?" +
-    "client_id=%s&redirect_uri=https://api.dulno.com/gitlab/authorize/&" +
+    "client_id=%s&redirect_uri=https://api.dulno.com/v1/gitlab/authorize/&" +
     "response_type=code&state=%s";
 
   private CompletableFuture<Map<String, Object>> addGitlab(
@@ -130,7 +130,7 @@ public class GitlabController extends DulnoRestController {
     var payload = new JSONObject(Map.of("client_id", gitlab.applicationId(),
       "client_secret", gitlab.secret(), "code", code,
       "grant_type", "authorization_code",
-      "redirect_uri", "https://api.dulno.com/gitlab/authorize/")).toString();
+      "redirect_uri", "https://api.dulno.com/v1/gitlab/authorize/")).toString();
     var requestBuilder = HttpRequest.newBuilder().uri(URI.create(
       String.format(GITLAB_TOKEN_URL, gitlab.hostname())))
       .method("POST", HttpRequest.BodyPublishers.ofString(payload));
