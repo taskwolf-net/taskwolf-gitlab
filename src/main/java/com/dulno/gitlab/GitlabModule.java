@@ -2,9 +2,13 @@ package com.dulno.gitlab;
 
 import com.dulno.core.database.DatabaseConnection;
 import com.dulno.core.database.DatabaseKeyspace;
+import com.dulno.core.locale.Translation;
+import com.dulno.gitlab.action.repository.GitlabRepositoryCreateAction;
 import com.dulno.gitlab.select.GitlabComponentSelect;
 import com.dulno.gitlab.select.RepositoryComponentSelect;
+import com.dulno.gitlab.select.VisibilityComponentSelect;
 import com.dulno.gitlab.structure.GitlabDatabaseTable;
+import com.dulno.gitlab.structure.GitlabRequestFactory;
 import com.google.common.collect.Lists;
 import com.google.inject.Injector;
 import com.dulno.core.account.AccountLink;
@@ -27,6 +31,7 @@ public final class GitlabModule extends Module {
   private AccountLink accountLink;
   private InputComponentSelect gitlabComponentSelect;
   private InputComponentSelect repositoryComponentSelect;
+  private InputComponentSelect visibilityComponentSelect;
 
   public GitlabModule(Injector injector) {
     super(injector.createChildInjector(GitlabInjectionModule.create()));
@@ -42,6 +47,8 @@ public final class GitlabModule extends Module {
     accountLink = GitlabAccountLink.create(gitlabDatabaseTable);
     gitlabComponentSelect = GitlabComponentSelect.create(gitlabDatabaseTable);
     repositoryComponentSelect = RepositoryComponentSelect.create(gitlabDatabaseTable);
+    visibilityComponentSelect = VisibilityComponentSelect.create(
+      injector().getInstance(Translation.class));
   }
 
   @Override
@@ -76,7 +83,11 @@ public final class GitlabModule extends Module {
     var databaseConnection = injector().getInstance(DatabaseConnection.class);
     var databaseKeyspace = injector().getInstance(DatabaseKeyspace.class);
     var gitlabDatabaseTable = injector().getInstance(GitlabDatabaseTable.class);
+    var gitlabRequestFactory = injector().getInstance(GitlabRequestFactory.class);
     var repository = ActionRepository.create();
+    repository.registerAction(GitlabRepositoryCreateAction.create(
+      gitlabComponentSelect, visibilityComponentSelect, gitlabDatabaseTable,
+      gitlabRequestFactory, databaseConnection, databaseKeyspace));
     return repository;
   }
 }
