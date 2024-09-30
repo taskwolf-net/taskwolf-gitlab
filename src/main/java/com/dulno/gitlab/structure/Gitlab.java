@@ -15,7 +15,8 @@ public final class Gitlab {
     return create(row.findCell(0).uuidValue(), row.findCell(1).uuidValue(),
       GitlabType.valueOf(row.findCell(2).stringValue()),
       row.findCell(3).stringValue(), row.findCell(4).stringValue(),
-      row.findCell(5).stringValue());
+      row.findCell(5).stringValue(), row.findCell(6).stringValue(),
+      row.findCell(7).longValue(), row.findCell(8).stringValue());
   }
 
   private final UUID id;
@@ -24,4 +25,19 @@ public final class Gitlab {
   private final String hostname;
   private final String applicationId;
   private final String secret;
+  private String accessToken;
+  private long expiration;
+  private String refreshToken;
+
+  public void updateAccessToken(String newAccessToken) {
+    this.accessToken = newAccessToken;
+  }
+
+  public void updateExpiration(long newExpiration) {
+    this.expiration = newExpiration;
+  }
+
+  public void updateRefreshToken(String newRefreshToken) {
+    this.refreshToken = newRefreshToken;
+  }
 }

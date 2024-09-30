@@ -23,6 +23,9 @@ public final class GitlabDatabaseTable extends DatabaseTable {
     columns.add(DatabaseColumn.create("hostname", DatabaseDataType.TEXT));
     columns.add(DatabaseColumn.create("application", DatabaseDataType.TEXT));
     columns.add(DatabaseColumn.create("secret", DatabaseDataType.TEXT));
+    columns.add(DatabaseColumn.create("accessToken", DatabaseDataType.TEXT));
+    columns.add(DatabaseColumn.create("expiration", DatabaseDataType.TEXT));
+    columns.add(DatabaseColumn.create("refreshToken", DatabaseDataType.TEXT));
     return new GitlabDatabaseTable(connection, keyspace, TABLE_NAME, columns);
   }
 
@@ -35,15 +38,17 @@ public final class GitlabDatabaseTable extends DatabaseTable {
 
   public CompletableFuture<Void> insertGitlab(Gitlab gitlab) {
     return insertGitlab(gitlab.id(), gitlab.ownerId(), gitlab.type(),
-      gitlab.hostname(), gitlab.applicationId(), gitlab.secret());
+      gitlab.hostname(), gitlab.applicationId(), gitlab.secret(),
+      gitlab.accessToken(), gitlab.expiration(), gitlab.refreshToken());
   }
 
   public CompletableFuture<Void> insertGitlab(
     UUID id, UUID ownerId, GitlabType type, String hostname,
-    String applicationId, String secret
+    String applicationId, String secret, String accessToken,
+    long expiration, String refreshToken
   ) {
     return insert(DatabaseRow.of(id, ownerId, type.toString(),
-      hostname, applicationId, secret));
+      hostname, applicationId, secret, accessToken, expiration, refreshToken));
   }
 
   public CompletableFuture<UUID> generateAvailableGitlabId() {
@@ -53,6 +58,22 @@ public final class GitlabDatabaseTable extends DatabaseTable {
       generateAvailableGitlabId().thenApply(futureResponse::complete) :
       CompletableFuture.completedFuture(futureResponse.complete(id)));
     return futureResponse;
+  }
+
+  public void updateGitlabAccess(
+    Gitlab gitlab, String accessToken, long expiration, String refreshToken
+  ) {
+    gitlab.updateAccessToken(accessToken);
+    gitlab.updateExpiration(expiration);
+    gitlab.updateRefreshToken(refreshToken);
+    updateGitlab(gitlab);
+  }
+
+  private void updateGitlab(Gitlab gitlab) {
+    update(gitlab.id(), DatabaseRow.of(gitlab.id(), gitlab.ownerId(),
+      gitlab.type().toString(), gitlab.hostname(), gitlab.applicationId(),
+      gitlab.secret(), gitlab.accessToken(), gitlab.expiration(),
+      gitlab.refreshToken()));
   }
 
   public void deleteGitlab(UUID id) {
