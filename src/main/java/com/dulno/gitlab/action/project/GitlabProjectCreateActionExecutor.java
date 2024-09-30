@@ -1,4 +1,4 @@
-package com.dulno.gitlab.action.repository;
+package com.dulno.gitlab.action.project;
 
 import com.dulno.core.action.ActionExecutor;
 import com.dulno.core.action.ActionResult;
@@ -13,35 +13,35 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @AllArgsConstructor(staticName = "create")
-public final class GitlabRepositoryCreateActionExecutor implements ActionExecutor {
+public final class GitlabProjectCreateActionExecutor implements ActionExecutor {
   private final GitlabDatabaseTable gitlabDatabaseTable;
   private final GitlabRequestFactory gitlabRequestFactory;
   private final UUID gitlabId;
-  private String repositoryName;
+  private String projectName;
   private final String visibility;
 
   @Override
   public CompletableFuture<ActionResult> execute(Map<String, Object> information) {
     var dissolve = PlaceholderDissolve.create(information);
-    repositoryName = dissolve.dissolve(repositoryName);
+    projectName = dissolve.dissolve(projectName);
     return gitlabDatabaseTable.gitlabExists(gitlabId).thenCompose(this::execute);
   }
 
   private CompletableFuture<ActionResult> execute(boolean gitlabExists) {
     if (!gitlabExists) {
-      return ActionResult.futureFailure("gitlab.action.repository.create.failure.gitlab.not.found");
+      return ActionResult.futureFailure("gitlab.action.project.create.failure.gitlab.not.found");
     }
-    var body = Map.<String, Object>of("name", repositoryName,
+    var body = Map.<String, Object>of("name", projectName,
       "visibility", visibility, "initialize_with_readme", false);
     return gitlabRequestFactory.create(gitlabId)
       .send("/api/v4/projects", "POST", body).thenApply(result ->
         ActionResult.success(buildInformation((int) result.get("id"))));
   }
 
-  private Map<String, Object> buildInformation(int repositoryIdentifier) {
+  private Map<String, Object> buildInformation(int projectIdentifier) {
     var information = Maps.<String, Object>newHashMap();
-    information.put("repositoryIdentifier", String.valueOf(repositoryIdentifier));
-    information.put("repositoryName", repositoryName);
+    information.put("projectIdentifier", String.valueOf(projectIdentifier));
+    information.put("projectName", projectName);
     return information;
   }
 }

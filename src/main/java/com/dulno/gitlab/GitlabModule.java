@@ -3,9 +3,9 @@ package com.dulno.gitlab;
 import com.dulno.core.database.DatabaseConnection;
 import com.dulno.core.database.DatabaseKeyspace;
 import com.dulno.core.locale.Translation;
-import com.dulno.gitlab.action.repository.GitlabRepositoryCreateAction;
+import com.dulno.gitlab.action.project.GitlabProjectCreateAction;
 import com.dulno.gitlab.select.GitlabComponentSelect;
-import com.dulno.gitlab.select.RepositoryComponentSelect;
+import com.dulno.gitlab.select.ProjectComponentSelect;
 import com.dulno.gitlab.select.VisibilityComponentSelect;
 import com.dulno.gitlab.structure.GitlabDatabaseTable;
 import com.dulno.gitlab.structure.GitlabRequestFactory;
@@ -30,7 +30,7 @@ public final class GitlabModule extends Module {
   private GitlabContextInitializer contextInitializer;
   private AccountLink accountLink;
   private InputComponentSelect gitlabComponentSelect;
-  private InputComponentSelect repositoryComponentSelect;
+  private InputComponentSelect projectComponentSelect;
   private InputComponentSelect visibilityComponentSelect;
 
   public GitlabModule(Injector injector) {
@@ -46,7 +46,7 @@ public final class GitlabModule extends Module {
     springApplication.addInitializers(contextInitializer);
     accountLink = GitlabAccountLink.create(gitlabDatabaseTable);
     gitlabComponentSelect = GitlabComponentSelect.create(gitlabDatabaseTable);
-    repositoryComponentSelect = RepositoryComponentSelect.create(gitlabDatabaseTable);
+    projectComponentSelect = ProjectComponentSelect.create(gitlabDatabaseTable);
     visibilityComponentSelect = VisibilityComponentSelect.create(
       injector().getInstance(Translation.class));
   }
@@ -85,7 +85,7 @@ public final class GitlabModule extends Module {
     var gitlabDatabaseTable = injector().getInstance(GitlabDatabaseTable.class);
     var gitlabRequestFactory = injector().getInstance(GitlabRequestFactory.class);
     var repository = ActionRepository.create();
-    repository.registerAction(GitlabRepositoryCreateAction.create(
+    repository.registerAction(GitlabProjectCreateAction.create(
       gitlabComponentSelect, visibilityComponentSelect, gitlabDatabaseTable,
       gitlabRequestFactory, databaseConnection, databaseKeyspace));
     return repository;

@@ -1,4 +1,4 @@
-package com.dulno.gitlab.action.repository;
+package com.dulno.gitlab.action.project;
 
 import com.dulno.core.action.Action;
 import com.dulno.core.action.ActionContentDatabaseTable;
@@ -18,8 +18,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @AllArgsConstructor(staticName = "create")
-public final class GitlabRepositoryCreateAction implements Action<GitlabRepositoryCreateActionExecutor> {
-  public static GitlabRepositoryCreateAction create(
+public final class GitlabProjectCreateAction implements Action<GitlabProjectCreateActionExecutor> {
+  public static GitlabProjectCreateAction create(
     InputComponentSelect gitlabComponentSelect,
     InputComponentSelect visibilityComponentSelect,
     GitlabDatabaseTable gitlabDatabaseTable,
@@ -28,12 +28,12 @@ public final class GitlabRepositoryCreateAction implements Action<GitlabReposito
   ) {
     var contentColumns = Lists.<DatabaseColumn>newArrayList();
     contentColumns.add(DatabaseColumn.create("gitlabId", DatabaseDataType.UUID));
-    contentColumns.add(DatabaseColumn.create("repositoryName", DatabaseDataType.TEXT));
-    contentColumns.add(DatabaseColumn.create("repositoryVisibility", DatabaseDataType.TEXT));
-    return new GitlabRepositoryCreateAction(gitlabComponentSelect,
+    contentColumns.add(DatabaseColumn.create("projectName", DatabaseDataType.TEXT));
+    contentColumns.add(DatabaseColumn.create("projectVisibility", DatabaseDataType.TEXT));
+    return new GitlabProjectCreateAction(gitlabComponentSelect,
       visibilityComponentSelect, gitlabDatabaseTable, gitlabRequestFactory,
       ActionContentDatabaseTable.create(databaseConnection, databaseKeyspace,
-        "action_gitlab_repository_create", contentColumns));
+        "action_gitlab_project_create", contentColumns));
   }
 
   private final InputComponentSelect gitlabComponentSelect;
@@ -44,22 +44,22 @@ public final class GitlabRepositoryCreateAction implements Action<GitlabReposito
 
   @Override
   public String type() {
-    return "gitlab-repository-create-action";
+    return "gitlab-project-create-action";
   }
 
   @Override
   public ActionInformation information() {
     return ActionInformation.builder()
-      .withName("gitlab.action.repository.create.name")
-      .withDescription("gitlab.action.repository.create.description")
-      .withInputVariable(InputComponentVariable.createSelect("gitlab.action.repository.create.input.gitlab.name",
-        "gitlabIdentifier", "gitlab.action.repository.create.input.gitlab.description", gitlabComponentSelect))
-      .withInputVariable(InputComponentVariable.createRequired("gitlab.action.repository.create.input.repository.name",
-        "repositoryName", "gitlab.action.repository.create.input.repository.description", InputComponentDataType.TEXT))
-      .withInputVariable(InputComponentVariable.createSelect("gitlab.action.repository.create.input.visibility.name",
-        "repositoryVisibility", "gitlab.action.repository.create.input.visibility.description", visibilityComponentSelect))
-      .withOutputVariable(OutputComponentVariable.create("gitlab.action.repository.create.output.identifier", "repositoryIdentifier"))
-      .withOutputVariable(OutputComponentVariable.create("gitlab.action.repository.create.output.name", "repositoryName"))
+      .withName("gitlab.action.project.create.name")
+      .withDescription("gitlab.action.project.create.description")
+      .withInputVariable(InputComponentVariable.createSelect("gitlab.action.project.create.input.gitlab.name",
+        "gitlabIdentifier", "gitlab.action.project.create.input.gitlab.description", gitlabComponentSelect))
+      .withInputVariable(InputComponentVariable.createRequired("gitlab.action.project.create.input.project.name",
+        "projectName", "gitlab.action.project.create.input.project.description", InputComponentDataType.TEXT))
+      .withInputVariable(InputComponentVariable.createSelect("gitlab.action.project.create.input.visibility.name",
+        "projectVisibility", "gitlab.action.project.create.input.visibility.description", visibilityComponentSelect))
+      .withOutputVariable(OutputComponentVariable.create("gitlab.action.project.create.output.identifier", "projectIdentifier"))
+      .withOutputVariable(OutputComponentVariable.create("gitlab.action.project.create.output.name", "projectName"))
       .build();
   }
 
@@ -72,21 +72,21 @@ public final class GitlabRepositoryCreateAction implements Action<GitlabReposito
   public CompletableFuture<Void> insert(UUID actionId, Map<String, Object> content) {
     return contentDatabaseTable.insertContent(actionId, DatabaseRow.of(
       UUID.fromString((String) content.get("gitlabIdentifier")),
-      content.get("repositoryName"), content.get("repositoryVisibility")));
+      content.get("projectName"), content.get("projectVisibility")));
   }
 
   @Override
   public CompletableFuture<Map<String, Object>> findContent(UUID actionId) {
     return contentDatabaseTable.findContent(actionId).thenApply(row ->
       Map.of("gitlabIdentifier", row.findCell(1).uuidValue().toString(),
-        "repositoryName", row.findCell(2).stringValue(),
-        "repositoryVisibility", row.findCell(3).stringValue()));
+        "projectName", row.findCell(2).stringValue(),
+        "projectVisibility", row.findCell(3).stringValue()));
   }
 
   @Override
-  public CompletableFuture<GitlabRepositoryCreateActionExecutor> build(UUID actionId) {
+  public CompletableFuture<GitlabProjectCreateActionExecutor> build(UUID actionId) {
     return contentDatabaseTable.findContent(actionId)
-      .thenApply(content -> GitlabRepositoryCreateActionExecutor.create(
+      .thenApply(content -> GitlabProjectCreateActionExecutor.create(
         gitlabDatabaseTable, gitlabRequestFactory,
         content.findCell(1).uuidValue(), content.findCell(2).stringValue(),
         content.findCell(3).stringValue()));

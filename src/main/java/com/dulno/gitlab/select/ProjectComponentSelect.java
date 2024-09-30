@@ -12,7 +12,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor(staticName = "create")
-public class RepositoryComponentSelect implements InputComponentSelect {
+public class ProjectComponentSelect implements InputComponentSelect {
   private final GitlabDatabaseTable gitlabDatabaseTable;
 
   @Override
