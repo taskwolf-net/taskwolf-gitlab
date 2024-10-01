@@ -43,7 +43,7 @@ public final class GitlabIssueCreateActionExecutor implements ActionExecutor {
   }
 
   private ActionResult execute(HttpResponse<String> response) {
-    if (response.statusCode() != 200) {
+    if (response.statusCode() != 201) {
       return ActionResult.failure("gitlab.action.issue.create.failure.gitlab.response");
     }
     return ActionResult.success(buildInformation(
