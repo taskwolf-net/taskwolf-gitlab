@@ -4,6 +4,7 @@ import com.dulno.core.database.DatabaseConnection;
 import com.dulno.core.database.DatabaseKeyspace;
 import com.dulno.core.locale.Translation;
 import com.dulno.gitlab.action.issue.GitlabIssueCreateAction;
+import com.dulno.gitlab.action.merge.request.GitlabMergeRequestCreateAction;
 import com.dulno.gitlab.action.project.GitlabProjectCreateAction;
 import com.dulno.gitlab.select.GitlabComponentSelect;
 import com.dulno.gitlab.select.ProjectComponentSelect;
@@ -92,6 +93,9 @@ public final class GitlabModule extends Module {
       gitlabComponentSelect, visibilityComponentSelect, gitlabDatabaseTable,
       gitlabRequestFactory, databaseConnection, databaseKeyspace));
     repository.registerAction(GitlabIssueCreateAction.create(
+      gitlabComponentSelect, projectComponentSelect, gitlabDatabaseTable,
+      gitlabRequestFactory, databaseConnection, databaseKeyspace));
+    repository.registerAction(GitlabMergeRequestCreateAction.create(
       gitlabComponentSelect, projectComponentSelect, gitlabDatabaseTable,
       gitlabRequestFactory, databaseConnection, databaseKeyspace));
     return repository;

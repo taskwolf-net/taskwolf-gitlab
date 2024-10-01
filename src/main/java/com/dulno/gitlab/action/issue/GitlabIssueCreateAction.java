@@ -60,7 +60,7 @@ public final class GitlabIssueCreateAction implements Action<GitlabIssueCreateAc
       .withInputVariable(InputComponentVariable.createRequired("gitlab.action.issue.create.input.issue.title.name",
         "issueTitle", "gitlab.action.issue.create.input.issue.title.description", InputComponentDataType.TEXT))
       .withInputVariable(InputComponentVariable.createRequired("gitlab.action.issue.create.input.issue.description.name",
-        "issueDescription", "gitlab.action.issue.create.input.issue.description.description", InputComponentDataType.TEXT))
+        "issueDescription", "gitlab.action.issue.create.input.issue.description.description", InputComponentDataType.TEXT_AREA))
       .withOutputVariable(OutputComponentVariable.create("gitlab.action.issue.create.output.identifier", "issueIdentifier"))
       .withOutputVariable(OutputComponentVariable.create("gitlab.action.issue.create.output.title", "issueTitle"))
       .withOutputVariable(OutputComponentVariable.create("gitlab.action.issue.create.output.description", "issueDescription"))
