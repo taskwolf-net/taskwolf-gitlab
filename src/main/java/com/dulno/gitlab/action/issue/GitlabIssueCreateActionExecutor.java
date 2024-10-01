@@ -47,7 +47,7 @@ public final class GitlabIssueCreateActionExecutor implements ActionExecutor {
       return ActionResult.failure("gitlab.action.issue.create.failure.gitlab.response");
     }
     return ActionResult.success(buildInformation(
-      new JSONObject(response.body()).getInt("id")));
+      new JSONObject(response.body()).getInt("iid")));
   }
 
   private Map<String, Object> buildInformation(int issueIdentifier) {

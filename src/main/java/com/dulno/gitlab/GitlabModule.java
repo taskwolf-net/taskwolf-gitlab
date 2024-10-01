@@ -4,6 +4,7 @@ import com.dulno.core.database.DatabaseConnection;
 import com.dulno.core.database.DatabaseKeyspace;
 import com.dulno.core.locale.Translation;
 import com.dulno.gitlab.action.issue.GitlabIssueCreateAction;
+import com.dulno.gitlab.action.issue.note.GitlabIssueNoteAddAction;
 import com.dulno.gitlab.action.merge.request.GitlabMergeRequestCreateAction;
 import com.dulno.gitlab.action.project.GitlabProjectCreateAction;
 import com.dulno.gitlab.select.GitlabComponentSelect;
@@ -89,14 +90,17 @@ public final class GitlabModule extends Module {
     var gitlabDatabaseTable = injector().getInstance(GitlabDatabaseTable.class);
     var gitlabRequestFactory = injector().getInstance(GitlabRequestFactory.class);
     var repository = ActionRepository.create();
-    repository.registerAction(GitlabProjectCreateAction.create(
-      gitlabComponentSelect, visibilityComponentSelect, gitlabDatabaseTable,
-      gitlabRequestFactory, databaseConnection, databaseKeyspace));
     repository.registerAction(GitlabIssueCreateAction.create(
+      gitlabComponentSelect, projectComponentSelect, gitlabDatabaseTable,
+      gitlabRequestFactory, databaseConnection, databaseKeyspace));
+    repository.registerAction(GitlabIssueNoteAddAction.create(
       gitlabComponentSelect, projectComponentSelect, gitlabDatabaseTable,
       gitlabRequestFactory, databaseConnection, databaseKeyspace));
     repository.registerAction(GitlabMergeRequestCreateAction.create(
       gitlabComponentSelect, projectComponentSelect, gitlabDatabaseTable,
+      gitlabRequestFactory, databaseConnection, databaseKeyspace));
+    repository.registerAction(GitlabProjectCreateAction.create(
+      gitlabComponentSelect, visibilityComponentSelect, gitlabDatabaseTable,
       gitlabRequestFactory, databaseConnection, databaseKeyspace));
     return repository;
   }
