@@ -34,6 +34,18 @@
   "gitlab.action.issue.create.failure.gitlab.not.found": "Beim Erstellen eines Gitlab-Issue ist ein Fehler aufgetreten. Der Fehler ist aufgetreten, weil die Gitlab-Instanz nicht gefunden werden konnte. Könnte es sein, dass Sie das Gitlab entfernt haben?",
   "gitlab.action.issue.create.failure.gitlab.response": "Beim Erstellen eines Gitlab-Issue ist ein Fehler aufgetreten. Der Fehler ist aufgetreten, weil die Gitlab-Instanz die Anfrage nicht verarbeiten konnte. Der Anwendung fehlt möglicherweise eine Berechtigung.",
 
+  "gitlab.action.issue.delete.name": "Issue löschen",
+  "gitlab.action.issue.delete.description": "Löscht ein Issue aus Ihrem Gitlab",
+  "gitlab.action.issue.delete.input.gitlab.name": "Gitlab",
+  "gitlab.action.issue.delete.input.gitlab.description": "Das Gitlab, aus dem das Issue gelöscht werden soll",
+  "gitlab.action.issue.delete.input.project.name": "Projekt",
+  "gitlab.action.issue.delete.input.project.description": "Das Projekt, aus dem das neue Issue gelöscht werden soll",
+  "gitlab.action.issue.delete.input.issue.name": "Issue ID",
+  "gitlab.action.issue.delete.input.issue.description": "Die ID des Issue das gelöscht werden soll",
+  "gitlab.action.issue.delete.output.identifier": "Issue-ID",
+  "gitlab.action.issue.delete.failure.gitlab.not.found": "Beim Löschen eines Gitlab-Issue ist ein Fehler aufgetreten. Der Fehler ist aufgetreten, weil die Gitlab-Instanz nicht gefunden werden konnte. Könnte es sein, dass Sie das Gitlab entfernt haben?",
+  "gitlab.action.issue.delete.failure.gitlab.response": "Beim Löschen eines Gitlab-Issue ist ein Fehler aufgetreten. Der Fehler ist aufgetreten, weil die Gitlab-Instanz die Anfrage nicht verarbeiten konnte. Der Anwendung fehlt möglicherweise eine Berechtigung.",
+
   "gitlab.action.issue.note.add.name": "Issue Notiz hinzufügen",
   "gitlab.action.issue.note.add.description": "Fügt eine Notiz zu einem Issue in Ihrem Gitlab hinzu",
   "gitlab.action.issue.note.add.input.gitlab.name": "Gitlab",
@@ -71,5 +83,20 @@
   "gitlab.action.merge.request.create.output.source": "Quell-Branch",
   "gitlab.action.merge.request.create.output.target": "Ziel-Branch",
   "gitlab.action.merge.request.create.failure.gitlab.not.found": "Beim Erstellen eines Gitlab Merge Request ist ein Fehler aufgetreten. Der Fehler ist aufgetreten, weil die Gitlab-Instanz nicht gefunden werden konnte. Könnte es sein, dass Sie das Gitlab entfernt haben?",
-  "gitlab.action.merge.request.create.failure.gitlab.response": "Beim Erstellen eines Gitlab Merge Request ist ein Fehler aufgetreten. Der Fehler ist aufgetreten, weil die Gitlab-Instanz die Anfrage nicht verarbeiten konnte. Der Anwendung fehlt möglicherweise eine Berechtigung."
+  "gitlab.action.merge.request.create.failure.gitlab.response": "Beim Erstellen eines Gitlab Merge Request ist ein Fehler aufgetreten. Der Fehler ist aufgetreten, weil die Gitlab-Instanz die Anfrage nicht verarbeiten konnte. Der Anwendung fehlt möglicherweise eine Berechtigung.",
+
+  "gitlab.action.merge.request.note.add.name": "Merge Request Notiz hinzufügen",
+  "gitlab.action.merge.request.note.add.description": "Fügt eine Notiz zu einem Merge Request in Ihrem Gitlab hinzu",
+  "gitlab.action.merge.request.note.add.input.gitlab.name": "Gitlab",
+  "gitlab.action.merge.request.note.add.input.gitlab.description": "Das Gitlab, in dem die neue Notiz erstellt werden soll",
+  "gitlab.action.merge.request.note.add.input.project.name": "Projekt",
+  "gitlab.action.merge.request.note.add.input.project.description": "Das Projekt, in dem die neue Notiz erstellt werden soll",
+  "gitlab.action.merge.request.note.add.input.issue.name": "Merge Request ID",
+  "gitlab.action.merge.request.note.add.input.issue.description": "Die ID des Merge Request, zu der die neue Notiz hinzugefügt werden soll",
+  "gitlab.action.merge.request.note.add.input.note.name": "Notiz",
+  "gitlab.action.merge.request.note.add.input.note.description": "Die Notiz die zu dem Merge Request hinzugefügt werden soll",
+  "gitlab.action.merge.request.note.add.output.identifier": "Merge Request Notiz ID",
+  "gitlab.action.merge.request.note.add.output.note": "Merge Request Notiz",
+  "gitlab.action.merge.request.note.add.failure.gitlab.not.found": "Beim Hinzufügen einer Notiz zu einem Gitlab Merge Request ist ein Fehler aufgetreten. Der Fehler ist aufgetreten, weil die Gitlab-Instanz nicht gefunden werden konnte. Könnte es sein, dass Sie das Gitlab entfernt haben?",
+  "gitlab.action.merge.request.note.add.failure.gitlab.response": "Beim Hinzufügen einer Notiz zu einem Gitlab Merge Request ist ein Fehler aufgetreten. Der Fehler ist aufgetreten, weil die Gitlab-Instanz die Anfrage nicht verarbeiten konnte. Der Anwendung fehlt möglicherweise eine Berechtigung."
 }

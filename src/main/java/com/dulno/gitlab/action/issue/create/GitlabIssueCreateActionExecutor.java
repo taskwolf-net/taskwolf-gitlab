@@ -1,4 +1,4 @@
-package com.dulno.gitlab.action.issue;
+package com.dulno.gitlab.action.issue.create;
 
 import com.dulno.core.action.ActionExecutor;
 import com.dulno.core.action.ActionResult;
