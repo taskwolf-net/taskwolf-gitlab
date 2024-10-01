@@ -8,6 +8,7 @@ import com.dulno.gitlab.action.issue.delete.GitlabIssueDeleteAction;
 import com.dulno.gitlab.action.issue.note.GitlabIssueNoteAddAction;
 import com.dulno.gitlab.action.merge.request.GitlabMergeRequestCreateAction;
 import com.dulno.gitlab.action.merge.request.note.GitlabMergeRequestNoteAddAction;
+import com.dulno.gitlab.action.pipeline.GitlabPipelineRunAction;
 import com.dulno.gitlab.action.project.GitlabProjectCreateAction;
 import com.dulno.gitlab.select.GitlabComponentSelect;
 import com.dulno.gitlab.select.ProjectComponentSelect;
@@ -92,6 +93,9 @@ public final class GitlabModule extends Module {
     var gitlabDatabaseTable = injector().getInstance(GitlabDatabaseTable.class);
     var gitlabRequestFactory = injector().getInstance(GitlabRequestFactory.class);
     var repository = ActionRepository.create();
+    repository.registerAction(GitlabPipelineRunAction.create(
+      gitlabComponentSelect, projectComponentSelect, gitlabDatabaseTable,
+      gitlabRequestFactory, databaseConnection, databaseKeyspace));
     repository.registerAction(GitlabIssueCreateAction.create(
       gitlabComponentSelect, projectComponentSelect, gitlabDatabaseTable,
       gitlabRequestFactory, databaseConnection, databaseKeyspace));
