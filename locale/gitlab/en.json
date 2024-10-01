@@ -16,5 +16,21 @@
   "gitlab.action.project.create.output.identifier": "Project ID",
   "gitlab.action.project.create.output.name": "Project name",
   "gitlab.action.project.create.failure.gitlab.not.found": "An error has occurred while creating a Gitlab project. The error occurred because the Gitlab instance could not be found. Could it be that you have removed the Gitlab?",
-  "gitlab.action.project.create.failure.gitlab.response": "An error has occurred while creating a Gitlab project. The error occurred because the Gitlab instance could not process the request. The application may be missing an authorisation."
+  "gitlab.action.project.create.failure.gitlab.response": "An error has occurred while creating a Gitlab project. The error occurred because the Gitlab instance could not process the request. The application may be missing an authorisation.",
+
+  "gitlab.action.issue.create.name": "Create issue",
+  "gitlab.action.issue.create.description": "Creates a new issue in your Gitlab",
+  "gitlab.action.issue.create.input.gitlab.name": "Gitlab",
+  "gitlab.action.issue.create.input.gitlab.description": "The Gitlab in which the new issue is to be created",
+  "gitlab.action.issue.create.input.project.name": "Project",
+  "gitlab.action.issue.create.input.project.description": "The project in which the new issue is to be created",
+  "gitlab.action.issue.create.input.issue.title.name": "Issue title",
+  "gitlab.action.issue.create.input.issue.title.description": "The title of the new issue",
+  "gitlab.action.issue.create.input.issue.description.name": "Issue description",
+  "gitlab.action.issue.create.input.issue.description.description": "The description of the new issue",
+  "gitlab.action.issue.create.output.identifier": "Issue ID",
+  "gitlab.action.issue.create.output.title": "Issue title",
+  "gitlab.action.issue.create.output.description": "Issue description",
+  "gitlab.action.issue.create.failure.gitlab.not.found": "An error has occurred while creating a Gitlab issue. The error occurred because the Gitlab instance could not be found. Could it be that you have removed the Gitlab?",
+  "gitlab.action.issue.create.failure.gitlab.response": "An error has occurred while creating a Gitlab issue. The error occurred because the Gitlab instance could not process the request. The application may be missing an authorisation."
 }

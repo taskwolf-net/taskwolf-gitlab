@@ -16,5 +16,21 @@
   "gitlab.action.project.create.output.identifier": "Projekt-ID",
   "gitlab.action.project.create.output.name": "Projektname",
   "gitlab.action.project.create.failure.gitlab.not.found": "Beim Erstellen eines Gitlab-Projekts ist ein Fehler aufgetreten. Der Fehler trat auf, weil die Gitlab-Instanz nicht gefunden werden konnte. Könnte es sein, dass Sie das Gitlab entfernt haben?",
-  "gitlab.action.project.create.failure.gitlab.response": "Beim Erstellen eines Gitlab-Projekts ist ein Fehler aufgetreten. Der Fehler ist aufgetreten, weil die Gitlab-Instanz die Anfrage nicht verarbeiten konnte. Der Anwendung fehlt möglicherweise eine Berechtigung."
+  "gitlab.action.project.create.failure.gitlab.response": "Beim Erstellen eines Gitlab-Projekts ist ein Fehler aufgetreten. Der Fehler ist aufgetreten, weil die Gitlab-Instanz die Anfrage nicht verarbeiten konnte. Der Anwendung fehlt möglicherweise eine Berechtigung.",
+
+  "gitlab.action.issue.create.name": "Issue erstellen",
+  "gitlab.action.issue.create.description": "Erstellt ein neues Issue in Ihrem Gitlab",
+  "gitlab.action.issue.create.input.gitlab.name": "Gitlab",
+  "gitlab.action.issue.create.input.gitlab.description": "Das Gitlab, in dem das neue Issue erstellt werden soll",
+  "gitlab.action.issue.create.input.project.name": "Projekt",
+  "gitlab.action.issue.create.input.project.description": "Das Projekt, in dem das neue Issue erstellt werden soll",
+  "gitlab.action.issue.create.input.issue.title.name": "Titel des Issue",
+  "gitlab.action.issue.create.input.issue.title.description": "Der Titel des neuen Issue",
+  "gitlab.action.issue.create.input.issue.description.name": "Beschreibung des Issue",
+  "gitlab.action.issue.create.input.issue.description.description": "Die Beschreibung des neuen Issue",
+  "gitlab.action.issue.create.output.identifier": "Issue-ID",
+  "gitlab.action.issue.create.output.title": "Titel des Issue",
+  "gitlab.action.issue.create.output.description": "Beschreibung des Issue",
+  "gitlab.action.issue.create.failure.gitlab.not.found": "Beim Erstellen eines Gitlab-Issue ist ein Fehler aufgetreten. Der Fehler ist aufgetreten, weil die Gitlab-Instanz nicht gefunden werden konnte. Könnte es sein, dass Sie das Gitlab entfernt haben?",
+  "gitlab.action.issue.create.failure.gitlab.response": "Beim Erstellen eines Gitlab-Issue ist ein Fehler aufgetreten. Der Fehler ist aufgetreten, weil die Gitlab-Instanz die Anfrage nicht verarbeiten konnte. Der Anwendung fehlt möglicherweise eine Berechtigung."
 }

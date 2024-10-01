@@ -3,6 +3,7 @@ package com.dulno.gitlab;
 import com.dulno.core.database.DatabaseConnection;
 import com.dulno.core.database.DatabaseKeyspace;
 import com.dulno.core.locale.Translation;
+import com.dulno.gitlab.action.issue.GitlabIssueCreateAction;
 import com.dulno.gitlab.action.project.GitlabProjectCreateAction;
 import com.dulno.gitlab.select.GitlabComponentSelect;
 import com.dulno.gitlab.select.ProjectComponentSelect;
@@ -42,12 +43,13 @@ public final class GitlabModule extends Module {
     log = injector().getInstance(Log.class).subLog("Gitlab");
     springApplication = injector().getInstance(SpringApplication.class);
     var gitlabDatabaseTable = injector().getInstance(GitlabDatabaseTable.class);
+    var gitlabRequestFactory = injector().getInstance(GitlabRequestFactory.class);
     contextInitializer = GitlabContextInitializer.create(gitlabDatabaseTable,
-      injector().getInstance(GitlabRequestFactory.class));
+      gitlabRequestFactory);
     springApplication.addInitializers(contextInitializer);
     accountLink = GitlabAccountLink.create(gitlabDatabaseTable);
     gitlabComponentSelect = GitlabComponentSelect.create(gitlabDatabaseTable);
-    projectComponentSelect = ProjectComponentSelect.create(gitlabDatabaseTable);
+    projectComponentSelect = ProjectComponentSelect.create(gitlabRequestFactory);
     visibilityComponentSelect = VisibilityComponentSelect.create(
       injector().getInstance(Translation.class));
   }
@@ -88,6 +90,9 @@ public final class GitlabModule extends Module {
     var repository = ActionRepository.create();
     repository.registerAction(GitlabProjectCreateAction.create(
       gitlabComponentSelect, visibilityComponentSelect, gitlabDatabaseTable,
+      gitlabRequestFactory, databaseConnection, databaseKeyspace));
+    repository.registerAction(GitlabIssueCreateAction.create(
+      gitlabComponentSelect, projectComponentSelect, gitlabDatabaseTable,
       gitlabRequestFactory, databaseConnection, databaseKeyspace));
     return repository;
   }
