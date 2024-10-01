@@ -53,7 +53,7 @@ public final class GitlabMergeRequestCreateActionExecutor implements ActionExecu
       return ActionResult.failure("gitlab.action.merge.request.create.failure.gitlab.response");
     }
     return ActionResult.success(buildInformation(
-      new JSONObject(response.body()).getInt("id")));
+      new JSONObject(response.body()).getInt("iid")));
   }
 
   private Map<String, Object> buildInformation(int mergeRequestIdentifier) {
