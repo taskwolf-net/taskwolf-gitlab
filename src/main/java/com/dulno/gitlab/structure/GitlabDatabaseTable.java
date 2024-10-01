@@ -23,6 +23,7 @@ public final class GitlabDatabaseTable extends DatabaseTable {
     columns.add(DatabaseColumn.create("hostname", DatabaseDataType.TEXT));
     columns.add(DatabaseColumn.create("application", DatabaseDataType.TEXT));
     columns.add(DatabaseColumn.create("secret", DatabaseDataType.TEXT));
+    columns.add(DatabaseColumn.create("accountUsername", DatabaseDataType.TEXT));
     columns.add(DatabaseColumn.create("accessToken", DatabaseDataType.TEXT));
     columns.add(DatabaseColumn.create("expiration", DatabaseDataType.BIGINT));
     columns.add(DatabaseColumn.create("refreshToken", DatabaseDataType.TEXT));
@@ -39,16 +40,18 @@ public final class GitlabDatabaseTable extends DatabaseTable {
   public CompletableFuture<Void> insertGitlab(Gitlab gitlab) {
     return insertGitlab(gitlab.id(), gitlab.ownerId(), gitlab.type(),
       gitlab.hostname(), gitlab.applicationId(), gitlab.secret(),
-      gitlab.accessToken(), gitlab.expiration(), gitlab.refreshToken());
+      gitlab.accountUsername(), gitlab.accessToken(), gitlab.expiration(),
+      gitlab.refreshToken());
   }
 
   public CompletableFuture<Void> insertGitlab(
     UUID id, UUID ownerId, GitlabType type, String hostname,
-    String applicationId, String secret, String accessToken,
-    long expiration, String refreshToken
+    String applicationId, String secret, String accountUsername,
+    String accessToken, long expiration, String refreshToken
   ) {
-    return insert(DatabaseRow.of(id, ownerId, type.toString(),
-      hostname, applicationId, secret, accessToken, expiration, refreshToken));
+    return insert(DatabaseRow.of(id, ownerId, type.toString(), hostname,
+      applicationId, secret, accountUsername, accessToken,
+      expiration, refreshToken));
   }
 
   public CompletableFuture<UUID> generateAvailableGitlabId() {
@@ -60,20 +63,27 @@ public final class GitlabDatabaseTable extends DatabaseTable {
     return futureResponse;
   }
 
-  public void updateGitlabAccess(
+  public CompletableFuture<Void> updateGitlabAccess(
     Gitlab gitlab, String accessToken, long expiration, String refreshToken
   ) {
     gitlab.updateAccessToken(accessToken);
     gitlab.updateExpiration(expiration);
     gitlab.updateRefreshToken(refreshToken);
-    updateGitlab(gitlab);
+    return updateGitlab(gitlab);
   }
 
-  private void updateGitlab(Gitlab gitlab) {
-    update(gitlab.id(), DatabaseRow.of(gitlab.id(), gitlab.ownerId(),
+  public CompletableFuture<Void> updateGitlabAccountUsername(
+    Gitlab gitlab, String accountUsername
+  ) {
+    gitlab.updateAccountUsername(accountUsername);
+    return updateGitlab(gitlab);
+  }
+
+  private CompletableFuture<Void> updateGitlab(Gitlab gitlab) {
+    return update(gitlab.id(), DatabaseRow.of(gitlab.id(), gitlab.ownerId(),
       gitlab.type().toString(), gitlab.hostname(), gitlab.applicationId(),
-      gitlab.secret(), gitlab.accessToken(), gitlab.expiration(),
-      gitlab.refreshToken()));
+      gitlab.secret(), gitlab.accountUsername(), gitlab.accessToken(),
+      gitlab.expiration(), gitlab.refreshToken()));
   }
 
   public void deleteGitlab(UUID id) {
@@ -88,12 +98,6 @@ public final class GitlabDatabaseTable extends DatabaseTable {
     var condition = DatabaseCondition.of(
       DatabaseComparison.create("owner", ownerId));
     return exists(condition);
-  }
-
-  public CompletableFuture<Boolean> gitlabExists(UUID ownerId, String hostname) {
-    return exists(DatabaseCondition.of(DatabaseCondition.Filtering.ALLOWED,
-      DatabaseComparison.create("owner", ownerId),
-      DatabaseComparison.create("hostname", hostname)));
   }
 
   public CompletableFuture<Gitlab> findGitlab(UUID id) {

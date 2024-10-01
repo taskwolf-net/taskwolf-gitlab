@@ -17,20 +17,20 @@ public final class GitlabRequest {
   private final HttpClient httpClient;
   private final UUID gitlabId;
 
-  public CompletableFuture<Map<String, Object>> send(
+  public CompletableFuture<HttpResponse<String>> send(
     String url, String method, Map<String, Object> body
   ) {
     return send(url, method, new JSONObject(body).toString());
   }
 
-  public CompletableFuture<Map<String, Object>> send(
+  public CompletableFuture<HttpResponse<String>> send(
     String url, String method, String body
   ) {
     return gitlabDatabaseTable.findGitlab(gitlabId)
       .thenCompose(gitlab -> send(gitlab, url, method, body));
   }
 
-  public CompletableFuture<Map<String, Object>> send(
+  public CompletableFuture<HttpResponse<String>> send(
     Gitlab gitlab, String url, String method, String body
   ) {
     if (System.currentTimeMillis() > gitlab.expiration()) {
@@ -43,8 +43,7 @@ public final class GitlabRequest {
     requestBuilder.setHeader("Authorization", "Bearer " + gitlab.accessToken());
     requestBuilder.setHeader("Content-Type", "application/json");
     var httpRequest = requestBuilder.build();
-    return httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString())
-      .thenApply(response -> new JSONObject(response.body()).toMap());
+    return httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
   }
 
   private static final String GITLAB_REFRESH_URL = "https://%s/oauth/token";

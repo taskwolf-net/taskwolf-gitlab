@@ -7,7 +7,9 @@ import com.dulno.gitlab.structure.GitlabDatabaseTable;
 import com.dulno.gitlab.structure.GitlabRequestFactory;
 import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
+import org.json.JSONObject;
 
+import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -34,8 +36,15 @@ public final class GitlabProjectCreateActionExecutor implements ActionExecutor {
     var body = Map.<String, Object>of("name", projectName,
       "visibility", visibility, "initialize_with_readme", false);
     return gitlabRequestFactory.create(gitlabId)
-      .send("/api/v4/projects", "POST", body).thenApply(result ->
-        ActionResult.success(buildInformation((int) result.get("id"))));
+      .send("/api/v4/projects", "POST", body).thenApply(this::execute);
+  }
+
+  private ActionResult execute(HttpResponse<String> response) {
+    if (response.statusCode() != 200) {
+      return ActionResult.failure("gitlab.action.project.create.failure.gitlab.response");
+    }
+    return ActionResult.success(buildInformation(
+      new JSONObject(response.body()).getInt("id")));
   }
 
   private Map<String, Object> buildInformation(int projectIdentifier) {

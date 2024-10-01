@@ -16,7 +16,8 @@ public final class Gitlab {
       GitlabType.valueOf(row.findCell(2).stringValue()),
       row.findCell(3).stringValue(), row.findCell(4).stringValue(),
       row.findCell(5).stringValue(), row.findCell(6).stringValue(),
-      row.findCell(7).longValue(), row.findCell(8).stringValue());
+      row.findCell(7).stringValue(), row.findCell(8).longValue(),
+      row.findCell(9).stringValue());
   }
 
   private final UUID id;
@@ -25,9 +26,14 @@ public final class Gitlab {
   private final String hostname;
   private final String applicationId;
   private final String secret;
+  private String accountUsername;
   private String accessToken;
   private long expiration;
   private String refreshToken;
+
+  public void updateAccountUsername(String accountUsername) {
+    this.accountUsername = accountUsername;
+  }
 
   public void updateAccessToken(String newAccessToken) {
     this.accessToken = newAccessToken;

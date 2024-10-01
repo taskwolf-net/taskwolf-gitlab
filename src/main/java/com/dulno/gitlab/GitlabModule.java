@@ -42,7 +42,8 @@ public final class GitlabModule extends Module {
     log = injector().getInstance(Log.class).subLog("Gitlab");
     springApplication = injector().getInstance(SpringApplication.class);
     var gitlabDatabaseTable = injector().getInstance(GitlabDatabaseTable.class);
-    contextInitializer = GitlabContextInitializer.create(gitlabDatabaseTable);
+    contextInitializer = GitlabContextInitializer.create(gitlabDatabaseTable,
+      injector().getInstance(GitlabRequestFactory.class));
     springApplication.addInitializers(contextInitializer);
     accountLink = GitlabAccountLink.create(gitlabDatabaseTable);
     gitlabComponentSelect = GitlabComponentSelect.create(gitlabDatabaseTable);

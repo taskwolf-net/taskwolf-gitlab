@@ -23,7 +23,6 @@ public class GitlabInjectionModule extends AbstractModule {
     var gitlabDatabaseTable = GitlabDatabaseTable.create(connection, keyspace);
     gitlabDatabaseTable.createIfNotExists();
     gitlabDatabaseTable.createIndexIfNotExists("owner");
-    gitlabDatabaseTable.createIndexIfNotExists("hostname");
     return gitlabDatabaseTable;
   }
 }

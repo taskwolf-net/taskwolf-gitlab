@@ -22,7 +22,7 @@ public class GitlabComponentSelect implements InputComponentSelect {
     return gitlabDatabaseTable.findGitlabsOfOwner(target)
       .thenApply(gitlabs -> gitlabs.stream()
         .map(gitlab -> InputComponentSelectEntry.create(gitlab.id().toString(),
-          gitlab.hostname()))
+          gitlab.hostname() + " | " + gitlab.accountUsername()))
         .toList());
   }
 }

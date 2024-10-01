@@ -23,7 +23,7 @@ public final class GitlabAccountLink implements AccountLink {
     return gitlabDatabaseTable.findGitlabsOfOwner(id)
       .thenApply(gitlabs -> gitlabs.stream()
         .map(gitlab -> AccountLinkEntry.create(gitlab.id().toString(),
-          gitlab.hostname()))
+          gitlab.hostname() + " | " + gitlab.accountUsername()))
         .toList());
   }
 

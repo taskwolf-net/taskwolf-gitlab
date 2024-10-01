@@ -9,6 +9,7 @@ import com.dulno.core.user.UserDatabaseTable;
 import com.dulno.core.user.UserTargetDatabaseTable;
 import com.dulno.gitlab.structure.Gitlab;
 import com.dulno.gitlab.structure.GitlabDatabaseTable;
+import com.dulno.gitlab.structure.GitlabRequestFactory;
 import com.dulno.gitlab.structure.GitlabType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,6 +31,7 @@ public class GitlabController extends DulnoRestController {
   private final UserTargetDatabaseTable userTargetDatabaseTable;
   private final TeamTargetDatabaseTable teamTargetDatabaseTable;
   private final TeamDatabaseTable teamDatabaseTable;
+  private final GitlabRequestFactory gitlabRequestFactory;
   private final HttpClient httpClient = HttpClient.newHttpClient();
 
   private GitlabController(
@@ -37,13 +39,14 @@ public class GitlabController extends DulnoRestController {
     GitlabDatabaseTable gitlabDatabaseTable,
     UserTargetDatabaseTable userTargetDatabaseTable,
     TeamTargetDatabaseTable teamTargetDatabaseTable,
-    TeamDatabaseTable teamDatabaseTable
+    TeamDatabaseTable teamDatabaseTable, GitlabRequestFactory gitlabRequestFactory
   ) {
     super(productKey, userDatabaseTable);
     this.gitlabDatabaseTable = gitlabDatabaseTable;
     this.userTargetDatabaseTable = userTargetDatabaseTable;
     this.teamTargetDatabaseTable = teamTargetDatabaseTable;
     this.teamDatabaseTable = teamDatabaseTable;
+    this.gitlabRequestFactory = gitlabRequestFactory;
   }
 
   @RequestMapping(path = "/gitlab/add/", method = RequestMethod.POST)
@@ -58,10 +61,9 @@ public class GitlabController extends DulnoRestController {
     return findUser(request)
       .thenCompose(user -> userTargetDatabaseTable.findTargetSecured(user.id())
         .thenCompose(target -> findGitlabOwner(user, target)
-          .thenCompose(owner -> gitlabDatabaseTable.gitlabExists(owner, hostname)
-            .thenCompose(gitlabExists -> addGitlab(owner, hostname,
-              body.getString("applicationId"), body.getString("secret"), apiKey,
-              gitlabExists)))));
+          .thenCompose(owner -> gitlabDatabaseTable.generateAvailableGitlabId()
+            .thenApply(id -> addGitlab(id, owner, hostname,
+              body.getString("applicationId"), body.getString("secret"), apiKey)))));
   }
 
   private CompletableFuture<UUID> findGitlabOwner(User user, UUID target) {
@@ -75,17 +77,6 @@ public class GitlabController extends DulnoRestController {
     "client_id=%s&redirect_uri=https://api.dulno.com/v1/gitlab/authorize/&" +
     "response_type=code&state=%s";
 
-  private CompletableFuture<Map<String, Object>> addGitlab(
-    UUID ownerId, String hostname, String applicationId, String secret,
-    String apiKey, boolean gitlabExists
-  ) {
-    if (gitlabExists) {
-      return CompletableFuture.completedFuture(Map.of("success", false));
-    }
-    return gitlabDatabaseTable.generateAvailableGitlabId().thenApply(id ->
-      addGitlab(id, ownerId, hostname, applicationId, secret, apiKey));
-  }
-
   private Map<String, Object> addGitlab(
     UUID id, UUID ownerId, String hostname, String applicationId, String secret,
     String apiKey
@@ -95,7 +86,7 @@ public class GitlabController extends DulnoRestController {
     var redirect = String.format(GITLAB_REDIRECT, hostname, applicationId,
       apiKey + "DULNO-STATE-SPLIT" + id.toString());
     gitlabDatabaseTable.insertGitlab(id, ownerId, type, hostname,
-      applicationId, secret, "", -1, "");
+      applicationId, secret, "", "", -1, "");
     return Map.of("success", true, "redirect", redirect);
   }
 
@@ -148,11 +139,30 @@ public class GitlabController extends DulnoRestController {
       .thenAccept(response -> updateGitlabAccess(gitlab, response));
   }
 
-  private void updateGitlabAccess(Gitlab gitlab, HttpResponse<String> httpResponse) {
-    var result = new JSONObject(httpResponse.body());
+  private void updateGitlabAccess(
+    Gitlab gitlab, HttpResponse<String> tokenResponse
+  ) {
+    if (tokenResponse.statusCode() != 200) {
+      return;
+    }
+    var result = new JSONObject(tokenResponse.body());
     gitlabDatabaseTable.updateGitlabAccess(gitlab, result.getString("access_token"),
       System.currentTimeMillis() + result.getLong("expires_in") * 1000,
-      result.getString("refresh_token"));
+      result.getString("refresh_token"))
+      .thenAccept(value -> gitlabRequestFactory.create(gitlab.id())
+        .send("/api/v4/user", "GET", "").thenAccept(userResponse ->
+          updateGitlabAccountUsername(gitlab, userResponse)));
+  }
+
+  private void updateGitlabAccountUsername(
+    Gitlab gitlab, HttpResponse<String> userResponse
+  ) {
+    if (userResponse.statusCode() != 200) {
+      return;
+    }
+    var result = new JSONObject(userResponse.body());
+    gitlabDatabaseTable.updateGitlabAccountUsername(gitlab,
+      result.getString("username"));
   }
 
   private CompletableFuture<Boolean> checkGitlabAuthorization(
