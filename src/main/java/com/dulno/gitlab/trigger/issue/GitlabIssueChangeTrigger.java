@@ -19,8 +19,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-public final class GitlabIssueCreateTrigger implements Trigger {
-  public static GitlabIssueCreateTrigger create(
+public final class GitlabIssueChangeTrigger implements Trigger {
+  public static GitlabIssueChangeTrigger create(
     InputComponentSelect gitlabComponentSelect,
     InputComponentSelect projectComponentSelect,
     GitlabWebhookFactory gitlabWebhookFactory,
@@ -31,10 +31,10 @@ public final class GitlabIssueCreateTrigger implements Trigger {
     contentColumns.add(DatabaseColumn.create("projectId", DatabaseDataType.TEXT));
     contentColumns.add(DatabaseColumn.create("webhookId", DatabaseDataType.TEXT));
     contentColumns.add(DatabaseColumn.create("webhookSecret", DatabaseDataType.TEXT));
-    return new GitlabIssueCreateTrigger(gitlabComponentSelect,
+    return new GitlabIssueChangeTrigger(gitlabComponentSelect,
       projectComponentSelect, gitlabWebhookFactory,
       TriggerContentDatabaseTable.create(databaseConnection, databaseKeyspace,
-        "trigger_gitlab_issue_create", contentColumns));
+        "trigger_gitlab_issue_change", contentColumns));
   }
 
   private final InputComponentSelect gitlabComponentSelect;
@@ -44,23 +44,24 @@ public final class GitlabIssueCreateTrigger implements Trigger {
 
   @Override
   public String type() {
-    return "gitlab-issue-create-trigger";
+    return "gitlab-issue-change-trigger";
   }
 
   @Override
   public TriggerInformation information() {
     return TriggerInformation.builder()
-      .withName("gitlab.trigger.issue.create.name")
-      .withDescription("gitlab.trigger.issue.create.description")
-      .withInputVariable(InputComponentVariable.createSelect("gitlab.trigger.issue.create.input.gitlab.name",
-        "gitlabIdentifier", "gitlab.trigger.issue.create.input.gitlab.description", gitlabComponentSelect))
-      .withInputVariable(InputComponentVariable.createSelect("gitlab.trigger.issue.create.input.project.name",
-        "projectIdentifier", "gitlab.trigger.issue.create.input.project.description", projectComponentSelect))
-      .withOutputVariable(OutputComponentVariable.create("gitlab.trigger.issue.create.output.identifier", "issueIdentifier"))
-      .withOutputVariable(OutputComponentVariable.create("gitlab.trigger.issue.create.output.title", "issueTitle"))
-      .withOutputVariable(OutputComponentVariable.create("gitlab.trigger.issue.create.output.description", "issueDescription"))
-      .withOutputVariable(OutputComponentVariable.create("gitlab.trigger.issue.create.output.creator.name", "issueCreatorName"))
-      .withOutputVariable(OutputComponentVariable.create("gitlab.trigger.issue.create.output.creator.email", "issueCreatorEmail"))
+      .withName("gitlab.trigger.issue.change.name")
+      .withDescription("gitlab.trigger.issue.change.description")
+      .withInputVariable(InputComponentVariable.createSelect("gitlab.trigger.issue.change.input.gitlab.name",
+        "gitlabIdentifier", "gitlab.trigger.issue.change.input.gitlab.description", gitlabComponentSelect))
+      .withInputVariable(InputComponentVariable.createSelect("gitlab.trigger.issue.change.input.project.name",
+        "projectIdentifier", "gitlab.trigger.issue.change.input.project.description", projectComponentSelect))
+      .withOutputVariable(OutputComponentVariable.create("gitlab.trigger.issue.change.output.identifier", "issueIdentifier"))
+      .withOutputVariable(OutputComponentVariable.create("gitlab.trigger.issue.change.output.title", "issueTitle"))
+      .withOutputVariable(OutputComponentVariable.create("gitlab.trigger.issue.change.output.description", "issueDescription"))
+      .withOutputVariable(OutputComponentVariable.create("gitlab.trigger.issue.change.output.status", "issueStatus"))
+      .withOutputVariable(OutputComponentVariable.create("gitlab.trigger.issue.change.output.creator.name", "issueCreatorName"))
+      .withOutputVariable(OutputComponentVariable.create("gitlab.trigger.issue.change.output.creator.email", "issueCreatorEmail"))
       .build();
   }
 

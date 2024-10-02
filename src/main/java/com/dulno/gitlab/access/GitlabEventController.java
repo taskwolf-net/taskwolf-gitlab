@@ -75,6 +75,7 @@ public class GitlabEventController extends DulnoRestController {
       case "push" -> findCommitInformation(payload);
       case "issue" -> findIssueCreateInformation(payload);
       case "pipeline" -> findPipelineChangeInformation(payload);
+      case "merge_request" -> findMergeRequestChangeInformation(payload);
       default -> Map.of("triggerType", "");
     };
   }
@@ -97,9 +98,10 @@ public class GitlabEventController extends DulnoRestController {
     var user = payload.getJSONObject("user");
     var information = Maps.<String, Object>newHashMap();
     information.put("triggerType", "gitlab-issue-create-trigger");
-    information.put("issueIdentifier", String.valueOf(attributes.getInt("id")));
+    information.put("issueIdentifier", String.valueOf(attributes.getInt("iid")));
     information.put("issueTitle", attributes.getString("title"));
     information.put("issueDescription", attributes.getString("description"));
+    information.put("issueStatus", attributes.getString("state"));
     information.put("issueCreatorName", user.getString("name"));
     information.put("issueCreatorEmail", user.getString("email"));
     return information;
@@ -113,6 +115,23 @@ public class GitlabEventController extends DulnoRestController {
     information.put("pipelineReference", attributes.getString("ref"));
     information.put("pipelineWebUrl", attributes.getString("url"));
     information.put("pipelineStatus", attributes.getString("status"));
+    return information;
+  }
+
+  private Map<String, Object> findMergeRequestChangeInformation(JSONObject payload) {
+    var attributes = payload.getJSONObject("object_attributes");
+    var user = payload.getJSONObject("user");
+    var information = Maps.<String, Object>newHashMap();
+    information.put("triggerType", "gitlab-merge-request-change-trigger");
+    information.put("mergeRequestIdentifier", String.valueOf(attributes.getInt("iid")));
+    information.put("mergeRequestTitle", attributes.getString("title"));
+    information.put("mergeRequestDescription", attributes.getString("description"));
+    information.put("mergeRequestWebUrl", attributes.getString("url"));
+    information.put("mergeRequestStatus", attributes.getString("state"));
+    information.put("mergeRequestSourceBranch", attributes.getString("source_branch"));
+    information.put("mergeRequestTargetBranch", attributes.getString("target_branch"));
+    information.put("mergeRequestCreatorName", user.getString("name"));
+    information.put("mergeRequestCreatorEmail", user.getString("email"));
     return information;
   }
 }

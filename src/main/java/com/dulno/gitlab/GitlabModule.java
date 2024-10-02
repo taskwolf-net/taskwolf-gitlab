@@ -17,7 +17,8 @@ import com.dulno.gitlab.structure.GitlabDatabaseTable;
 import com.dulno.gitlab.structure.GitlabRequestFactory;
 import com.dulno.gitlab.structure.GitlabWebhookFactory;
 import com.dulno.gitlab.trigger.commit.GitlabCommitTrigger;
-import com.dulno.gitlab.trigger.issue.GitlabIssueCreateTrigger;
+import com.dulno.gitlab.trigger.issue.GitlabIssueChangeTrigger;
+import com.dulno.gitlab.trigger.merge.request.GitlabMergeRequestChangeTrigger;
 import com.dulno.gitlab.trigger.pipeline.GitlabPipelineChangeTrigger;
 import com.google.common.collect.Lists;
 import com.google.inject.Injector;
@@ -90,10 +91,13 @@ public final class GitlabModule extends Module {
     repository.registerTrigger(GitlabCommitTrigger.create(
       gitlabComponentSelect, projectComponentSelect, gitlabWebhookFactory,
       databaseConnection, databaseKeyspace));
-    repository.registerTrigger(GitlabIssueCreateTrigger.create(
+    repository.registerTrigger(GitlabIssueChangeTrigger.create(
       gitlabComponentSelect, projectComponentSelect, gitlabWebhookFactory,
       databaseConnection, databaseKeyspace));
     repository.registerTrigger(GitlabPipelineChangeTrigger.create(
+      gitlabComponentSelect, projectComponentSelect, gitlabWebhookFactory,
+      databaseConnection, databaseKeyspace));
+    repository.registerTrigger(GitlabMergeRequestChangeTrigger.create(
       gitlabComponentSelect, projectComponentSelect, gitlabWebhookFactory,
       databaseConnection, databaseKeyspace));
     return repository;
