@@ -26,22 +26,28 @@ public final class GitlabRequest {
   public CompletableFuture<HttpResponse<String>> send(
     String url, String method, String body
   ) {
-    return gitlabDatabaseTable.findGitlab(gitlabId)
-      .thenCompose(gitlab -> send(gitlab, url, method, body));
+    return send(url, method, body, "application/json");
   }
 
   public CompletableFuture<HttpResponse<String>> send(
-    Gitlab gitlab, String url, String method, String body
+    String url, String method, String body, String contentType
+  ) {
+    return gitlabDatabaseTable.findGitlab(gitlabId)
+      .thenCompose(gitlab -> send(gitlab, url, method, body, contentType));
+  }
+
+  private CompletableFuture<HttpResponse<String>> send(
+    Gitlab gitlab, String url, String method, String body, String contentType
   ) {
     if (System.currentTimeMillis() > gitlab.expiration()) {
       return refreshAccess(gitlab)
-        .thenCompose(value -> send(gitlab, url, method, body));
+        .thenCompose(value -> send(gitlab, url, method, body, contentType));
     }
     var requestBuilder = HttpRequest.newBuilder().uri(URI.create(
         "https://" + gitlab.hostname() + url))
       .method(method, HttpRequest.BodyPublishers.ofString(body));
     requestBuilder.setHeader("Authorization", "Bearer " + gitlab.accessToken());
-    requestBuilder.setHeader("Content-Type", "application/json");
+    requestBuilder.setHeader("Content-Type", contentType);
     var httpRequest = requestBuilder.build();
     return httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
   }
