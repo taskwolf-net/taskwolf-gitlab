@@ -1,0 +1,92 @@
+package com.dulno.gitlab.access;
+
+import com.dulno.core.CoreModule;
+import com.dulno.core.access.DulnoRestController;
+import com.dulno.core.database.condition.DatabaseComparison;
+import com.dulno.core.database.condition.DatabaseCondition;
+import com.dulno.core.user.UserDatabaseTable;
+import com.dulno.gitlab.structure.GitlabDatabaseTable;
+import com.google.common.collect.Maps;
+import jakarta.servlet.http.HttpServletRequest;
+import org.json.JSONObject;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.security.Key;
+import java.util.Map;
+import java.util.UUID;
+
+@RestController
+public class GitlabEventController extends DulnoRestController {
+  private final GitlabDatabaseTable gitlabDatabaseTable;
+  private final CoreModule coreModule;
+
+  private GitlabEventController(
+    Key productKey, UserDatabaseTable userDatabaseTable,
+    GitlabDatabaseTable gitlabDatabaseTable, CoreModule coreModule
+  ) {
+    super(productKey, userDatabaseTable);
+    this.gitlabDatabaseTable = gitlabDatabaseTable;
+    this.coreModule = coreModule;
+  }
+
+  @RequestMapping(path = "/gitlab/event/", method = RequestMethod.POST)
+  public void processGitlabEvent(
+    HttpServletRequest request, @RequestBody String payload
+  ) {
+    var state = request.getHeader("X-Gitlab-Token");
+    if (state == null) {
+      return;
+    }
+    var split = state.split("DULNO-STATE-SPLIT");
+    var gitlabId = UUID.fromString(split[0]);
+    var projectId = split[1];
+    var webhookSecret = split[2];
+    gitlabDatabaseTable.gitlabExists(gitlabId)
+      .thenAccept(exists -> processGitlabEvent(gitlabId, projectId,
+        webhookSecret, payload, exists));
+  }
+
+  private void processGitlabEvent(
+    UUID gitlabId, String projectId, String webhookSecret, String payload,
+    boolean gitlabExists
+  ) {
+    if (!gitlabExists) {
+      return;
+    }
+    var information = findTriggerInformation(new JSONObject(payload));
+    var triggerType = (String) information.get("triggerType");
+    if (triggerType.isEmpty()) {
+      return;
+    }
+    information.remove("triggerType");
+    coreModule.triggerWorkflows("gitlab", triggerType,
+      DatabaseCondition.of(DatabaseCondition.Filtering.ALLOWED,
+        DatabaseComparison.create("gitlabId", gitlabId),
+        DatabaseComparison.create("projectId", projectId),
+        DatabaseComparison.create("webhookSecret", webhookSecret)),
+      information);
+  }
+
+  private Map<String, Object> findTriggerInformation(JSONObject payload) {
+    return switch (payload.getString("object_kind")) {
+      case "issue" -> findIssueCreateInformation(payload);
+      default -> Map.of("triggerType", "");
+    };
+  }
+
+  private Map<String, Object> findIssueCreateInformation(JSONObject payload) {
+    var attributes = payload.getJSONObject("object_attributes");
+    var user = payload.getJSONObject("user");
+    var information = Maps.<String, Object>newHashMap();
+    information.put("triggerType", "gitlab-issue-create-trigger");
+    information.put("issueIdentifier", String.valueOf(attributes.getInt("id")));
+    information.put("issueTitle", attributes.getString("title"));
+    information.put("issueDescription", attributes.getString("description"));
+    information.put("issueCreatorName", user.getString("name"));
+    information.put("issueCreatorEmail", user.getString("email"));
+    return information;
+  }
+}
