@@ -16,7 +16,10 @@ import com.dulno.gitlab.select.VisibilityComponentSelect;
 import com.dulno.gitlab.structure.GitlabDatabaseTable;
 import com.dulno.gitlab.structure.GitlabRequestFactory;
 import com.dulno.gitlab.structure.GitlabWebhookFactory;
+import com.dulno.gitlab.trigger.commit.GitlabCommitTrigger;
 import com.dulno.gitlab.trigger.issue.GitlabIssueCreateTrigger;
+import com.dulno.gitlab.trigger.job.GitlabJobChangeTrigger;
+import com.dulno.gitlab.trigger.pipeline.GitlabPipelineChangeTrigger;
 import com.google.common.collect.Lists;
 import com.google.inject.Injector;
 import com.dulno.core.account.AccountLink;
@@ -85,7 +88,16 @@ public final class GitlabModule extends Module {
     var databaseKeyspace = injector().getInstance(DatabaseKeyspace.class);
     var gitlabWebhookFactory = injector().getInstance(GitlabWebhookFactory.class);
     var repository = TriggerRepository.create();
+    repository.registerTrigger(GitlabCommitTrigger.create(
+      gitlabComponentSelect, projectComponentSelect, gitlabWebhookFactory,
+      databaseConnection, databaseKeyspace));
     repository.registerTrigger(GitlabIssueCreateTrigger.create(
+      gitlabComponentSelect, projectComponentSelect, gitlabWebhookFactory,
+      databaseConnection, databaseKeyspace));
+    repository.registerTrigger(GitlabPipelineChangeTrigger.create(
+      gitlabComponentSelect, projectComponentSelect, gitlabWebhookFactory,
+      databaseConnection, databaseKeyspace));
+    repository.registerTrigger(GitlabJobChangeTrigger.create(
       gitlabComponentSelect, projectComponentSelect, gitlabWebhookFactory,
       databaseConnection, databaseKeyspace));
     return repository;

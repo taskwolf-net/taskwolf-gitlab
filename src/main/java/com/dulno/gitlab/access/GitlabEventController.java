@@ -72,9 +72,25 @@ public class GitlabEventController extends DulnoRestController {
 
   private Map<String, Object> findTriggerInformation(JSONObject payload) {
     return switch (payload.getString("object_kind")) {
+      case "push" -> findCommitInformation(payload);
       case "issue" -> findIssueCreateInformation(payload);
+      case "pipeline" -> findPipelineChangeInformation(payload);
+      case "job" -> findJobChangeInformation(payload);
       default -> Map.of("triggerType", "");
     };
+  }
+
+  private Map<String, Object> findCommitInformation(JSONObject payload) {
+    var commit = payload.getJSONArray("commits").getJSONObject(0);
+    var author = commit.getJSONObject("author");
+    var information = Maps.<String, Object>newHashMap();
+    information.put("triggerType", "gitlab-commit-trigger");
+    information.put("commitIdentifier", commit.getString("id"));
+    information.put("commitReference", payload.getString("ref"));
+    information.put("commitMessage", commit.getString("message"));
+    information.put("commitAuthorName", author.getString("name"));
+    information.put("commitAuthorEmail", author.getString("email"));
+    return information;
   }
 
   private Map<String, Object> findIssueCreateInformation(JSONObject payload) {
@@ -87,6 +103,29 @@ public class GitlabEventController extends DulnoRestController {
     information.put("issueDescription", attributes.getString("description"));
     information.put("issueCreatorName", user.getString("name"));
     information.put("issueCreatorEmail", user.getString("email"));
+    return information;
+  }
+
+  private Map<String, Object> findPipelineChangeInformation(JSONObject payload) {
+    var attributes = payload.getJSONObject("object_attributes");
+    var information = Maps.<String, Object>newHashMap();
+    information.put("triggerType", "gitlab-pipeline-change-trigger");
+    information.put("pipelineIdentifier", String.valueOf(attributes.getInt("id")));
+    information.put("pipelineReference", attributes.getString("ref"));
+    information.put("pipelineWebUrl", attributes.getString("url"));
+    information.put("pipelineStatus", attributes.getString("status"));
+    return information;
+  }
+
+  private Map<String, Object> findJobChangeInformation(JSONObject payload) {
+    var attributes = payload.getJSONObject("object_attributes");
+    var information = Maps.<String, Object>newHashMap();
+    information.put("triggerType", "gitlab-job-change-trigger");
+    information.put("jobIdentifier", String.valueOf(attributes.getInt("id")));
+    information.put("jobReference", attributes.getString("ref"));
+    information.put("jobName", attributes.getString("name"));
+    information.put("jobStage", attributes.getString("stage"));
+    information.put("jobStatus", attributes.getString("status"));
     return information;
   }
 }
