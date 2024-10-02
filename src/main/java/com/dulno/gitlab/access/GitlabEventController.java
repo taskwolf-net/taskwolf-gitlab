@@ -76,6 +76,7 @@ public class GitlabEventController extends DulnoRestController {
       case "issue" -> findIssueCreateInformation(payload);
       case "pipeline" -> findPipelineChangeInformation(payload);
       case "merge_request" -> findMergeRequestChangeInformation(payload);
+      case "note" -> findNoteAddInformation(payload);
       default -> Map.of("triggerType", "");
     };
   }
@@ -132,6 +133,20 @@ public class GitlabEventController extends DulnoRestController {
     information.put("mergeRequestTargetBranch", attributes.getString("target_branch"));
     information.put("mergeRequestCreatorName", user.getString("name"));
     information.put("mergeRequestCreatorEmail", user.getString("email"));
+    return information;
+  }
+
+  private Map<String, Object> findNoteAddInformation(JSONObject payload) {
+    var attributes = payload.getJSONObject("object_attributes");
+    var user = payload.getJSONObject("user");
+    var information = Maps.<String, Object>newHashMap();
+    information.put("triggerType", "gitlab-note-add-trigger");
+    information.put("noteIdentifier", String.valueOf(attributes.getInt("id")));
+    information.put("noteContent", attributes.getString("note"));
+    information.put("noteableType", attributes.getString("noteable_type"));
+    information.put("noteableIdentifier", String.valueOf(attributes.getInt("noteable_id")));
+    information.put("noteAuthorName", user.getString("name"));
+    information.put("noteAuthorEmail", user.getString("email"));
     return information;
   }
 }
