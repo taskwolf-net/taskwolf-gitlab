@@ -5,6 +5,18 @@
   "gitlab.visibility.internal": "Internal",
   "gitlab.visibility.public": "Public",
 
+  "gitlab.trigger.issue.create.name": "Issue creation",
+  "gitlab.trigger.issue.create.description": "Is triggered when a new issue is created",
+  "gitlab.trigger.issue.create.input.gitlab.name": "Gitlab",
+  "gitlab.trigger.issue.create.input.gitlab.description": "The Gitlab whose issues are to be monitored",
+  "gitlab.trigger.issue.create.input.project.name": "Project",
+  "gitlab.trigger.issue.create.input.project.description": "The project whose issues are to be monitored",
+  "gitlab.trigger.issue.create.output.identifier": "Issue ID",
+  "gitlab.trigger.issue.create.output.title": "Issue title",
+  "gitlab.trigger.issue.create.output.description": "Issue description",
+  "gitlab.trigger.issue.create.output.creator.name": "Creator name",
+  "gitlab.trigger.issue.create.output.creator.email": "Creator email",
+
   "gitlab.action.pipeline.run.name": "Run pipeline",
   "gitlab.action.pipeline.run.description": "Runs a pipeline in your Gitlab",
   "gitlab.action.pipeline.run.input.gitlab.name": "Gitlab",

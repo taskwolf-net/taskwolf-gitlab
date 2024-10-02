@@ -15,6 +15,8 @@ import com.dulno.gitlab.select.ProjectComponentSelect;
 import com.dulno.gitlab.select.VisibilityComponentSelect;
 import com.dulno.gitlab.structure.GitlabDatabaseTable;
 import com.dulno.gitlab.structure.GitlabRequestFactory;
+import com.dulno.gitlab.structure.GitlabWebhookFactory;
+import com.dulno.gitlab.trigger.issue.GitlabIssueCreateTrigger;
 import com.google.common.collect.Lists;
 import com.google.inject.Injector;
 import com.dulno.core.account.AccountLink;
@@ -81,7 +83,11 @@ public final class GitlabModule extends Module {
   public TriggerRepository triggerRepository() {
     var databaseConnection = injector().getInstance(DatabaseConnection.class);
     var databaseKeyspace = injector().getInstance(DatabaseKeyspace.class);
+    var gitlabWebhookFactory = injector().getInstance(GitlabWebhookFactory.class);
     var repository = TriggerRepository.create();
+    repository.registerTrigger(GitlabIssueCreateTrigger.create(
+      gitlabComponentSelect, projectComponentSelect, gitlabWebhookFactory,
+      databaseConnection, databaseKeyspace));
     return repository;
   }
 
