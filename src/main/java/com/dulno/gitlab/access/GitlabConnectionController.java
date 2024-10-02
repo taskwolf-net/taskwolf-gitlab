@@ -26,7 +26,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
-public class GitlabController extends DulnoRestController {
+public class GitlabConnectionController extends DulnoRestController {
   private final GitlabDatabaseTable gitlabDatabaseTable;
   private final UserTargetDatabaseTable userTargetDatabaseTable;
   private final TeamTargetDatabaseTable teamTargetDatabaseTable;
@@ -34,7 +34,7 @@ public class GitlabController extends DulnoRestController {
   private final GitlabRequestFactory gitlabRequestFactory;
   private final HttpClient httpClient = HttpClient.newHttpClient();
 
-  private GitlabController(
+  private GitlabConnectionController(
     Key productKey, UserDatabaseTable userDatabaseTable,
     GitlabDatabaseTable gitlabDatabaseTable,
     UserTargetDatabaseTable userTargetDatabaseTable,
