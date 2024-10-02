@@ -75,7 +75,6 @@ public class GitlabEventController extends DulnoRestController {
       case "push" -> findCommitInformation(payload);
       case "issue" -> findIssueCreateInformation(payload);
       case "pipeline" -> findPipelineChangeInformation(payload);
-      case "job" -> findJobChangeInformation(payload);
       default -> Map.of("triggerType", "");
     };
   }
@@ -114,18 +113,6 @@ public class GitlabEventController extends DulnoRestController {
     information.put("pipelineReference", attributes.getString("ref"));
     information.put("pipelineWebUrl", attributes.getString("url"));
     information.put("pipelineStatus", attributes.getString("status"));
-    return information;
-  }
-
-  private Map<String, Object> findJobChangeInformation(JSONObject payload) {
-    var attributes = payload.getJSONObject("object_attributes");
-    var information = Maps.<String, Object>newHashMap();
-    information.put("triggerType", "gitlab-job-change-trigger");
-    information.put("jobIdentifier", String.valueOf(attributes.getInt("id")));
-    information.put("jobReference", attributes.getString("ref"));
-    information.put("jobName", attributes.getString("name"));
-    information.put("jobStage", attributes.getString("stage"));
-    information.put("jobStatus", attributes.getString("status"));
     return information;
   }
 }

@@ -40,18 +40,6 @@
   "gitlab.trigger.pipeline.change.output.web": "Pipeline Web URL",
   "gitlab.trigger.pipeline.change.output.status": "Pipeline Status",
 
-  "gitlab.trigger.job.change.name": "Job Änderung",
-  "gitlab.trigger.job.change.description": "Wird ausgelöst, wenn ein neuer Job ausgeführt wird oder sich der Status eines bestehenden Jobs ändert",
-  "gitlab.trigger.job.change.input.gitlab.name": "Gitlab",
-  "gitlab.trigger.job.change.input.gitlab.description": "Das Gitlab, dessen Jobs überwacht werden sollen",
-  "gitlab.trigger.job.change.input.project.name": "Projekt",
-  "gitlab.trigger.job.change.input.project.description": "Das Projekt, dessen Jobs überwacht werden sollen",
-  "gitlab.trigger.job.change.output.identifier": "Job ID",
-  "gitlab.trigger.job.change.output.reference": "Job Referenz",
-  "gitlab.trigger.job.change.output.name": "Job Name",
-  "gitlab.trigger.job.change.output.stage": "Job Stage",
-  "gitlab.trigger.job.change.output.status": "Job Status",
-
   "gitlab.action.pipeline.run.name": "Pipeline ausführen",
   "gitlab.action.pipeline.run.description": "Führt eine Pipeline in Ihrem Gitlab aus",
   "gitlab.action.pipeline.run.input.gitlab.name": "Gitlab",
