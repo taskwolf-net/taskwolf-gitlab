@@ -60,7 +60,8 @@ public final class GitlabModule extends Module {
     springApplication.addInitializers(contextInitializer);
     accountLink = GitlabAccountLink.create(gitlabDatabaseTable);
     gitlabComponentSelect = GitlabComponentSelect.create(gitlabDatabaseTable);
-    projectComponentSelect = ProjectComponentSelect.create(gitlabRequestFactory);
+    projectComponentSelect = ProjectComponentSelect.create(gitlabDatabaseTable,
+      gitlabRequestFactory);
     visibilityComponentSelect = VisibilityComponentSelect.create(
       injector().getInstance(Translation.class));
   }

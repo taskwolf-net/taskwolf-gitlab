@@ -1,5 +1,6 @@
 package com.dulno.gitlab.select;
 
+import com.dulno.gitlab.structure.GitlabDatabaseTable;
 import com.dulno.gitlab.structure.GitlabRequestFactory;
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +17,23 @@ import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor(staticName = "create")
 public class ProjectComponentSelect implements InputComponentSelect {
+  private final GitlabDatabaseTable gitlabDatabaseTable;
   private final GitlabRequestFactory gitlabRequestFactory;
 
   @Override
   public CompletableFuture<List<InputComponentSelectEntry>> compile(
     User user, UUID target, Map<String, String> previousInputs
   ) {
-    return gitlabRequestFactory
-      .create(UUID.fromString(previousInputs.get("gitlabIdentifier")))
-      .send("/api/v4/projects", "GET", "")
-      .thenApply(this::parseProjects);
+    try {
+      var gitlabId = UUID.fromString(previousInputs.get("gitlabIdentifier"));
+      return gitlabDatabaseTable.gitlabExists(gitlabId).thenCompose(exists ->
+        exists ? gitlabRequestFactory.create(gitlabId)
+          .send("/api/v4/projects", "GET", "")
+          .thenApply(this::parseProjects) :
+          CompletableFuture.completedFuture(Lists.newArrayList()));
+    } catch (Exception exception) {
+      return CompletableFuture.completedFuture(Lists.newArrayList());
+    }
   }
 
   private List<InputComponentSelectEntry> parseProjects(
