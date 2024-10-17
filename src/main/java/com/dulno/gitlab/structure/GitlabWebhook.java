@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -33,8 +34,14 @@ public final class GitlabWebhook {
       .send("/api/v4/projects/" + projectId + "/hooks", "POST",
         String.format(GITLAB_WEBHOOK_CREATE_BODY, createEventQuery(events), state),
         "application/x-www-form-urlencoded")
-      .thenApply(response -> String.valueOf(
-        new JSONObject(response.body()).getInt("id")));
+      .thenApply(this::processCreateResponse);
+  }
+
+  private String processCreateResponse(HttpResponse<String> response) {
+    if (response.statusCode() != 201) {
+      return "-1";
+    }
+    return String.valueOf(new JSONObject(response.body()).getInt("id"));
   }
 
   private String createEventQuery(List<String> events) {
