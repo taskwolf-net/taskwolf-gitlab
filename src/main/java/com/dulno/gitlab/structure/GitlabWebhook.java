@@ -38,7 +38,7 @@ public final class GitlabWebhook {
   }
 
   private String processCreateResponse(HttpResponse<String> response) {
-    if (response.statusCode() != 201) {
+    if (response == null || response.statusCode() != 201) {
       return "-1";
     }
     return String.valueOf(new JSONObject(response.body()).getInt("id"));

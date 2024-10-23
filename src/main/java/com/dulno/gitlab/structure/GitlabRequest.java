@@ -32,8 +32,11 @@ public final class GitlabRequest {
   public CompletableFuture<HttpResponse<String>> send(
     String url, String method, String body, String contentType
   ) {
-    return gitlabDatabaseTable.findGitlab(gitlabId)
-      .thenCompose(gitlab -> send(gitlab, url, method, body, contentType));
+    return gitlabDatabaseTable.gitlabExists(gitlabId)
+      .thenCompose(exists -> exists ?
+        gitlabDatabaseTable.findGitlab(gitlabId)
+          .thenCompose(gitlab -> send(gitlab, url, method, body, contentType)) :
+        CompletableFuture.completedFuture(null));
   }
 
   private CompletableFuture<HttpResponse<String>> send(
