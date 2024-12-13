@@ -2,7 +2,6 @@ package com.dulno.gitlab.access;
 
 import com.dulno.core.CoreModule;
 import com.dulno.core.access.DulnoRestController;
-import com.dulno.core.database.condition.DatabaseComparison;
 import com.dulno.core.database.condition.DatabaseCondition;
 import com.dulno.core.user.UserDatabaseTable;
 import com.dulno.gitlab.structure.GitlabDatabaseTable;
@@ -63,10 +62,8 @@ public class GitlabEventController extends DulnoRestController {
     }
     information.remove("triggerType");
     coreModule.triggerWorkflows("gitlab", triggerType,
-      DatabaseCondition.of(DatabaseCondition.Filtering.ALLOWED,
-        DatabaseComparison.create("gitlabId", gitlabId),
-        DatabaseComparison.create("projectId", projectId),
-        DatabaseComparison.create("webhookSecret", webhookSecret)),
+      DatabaseCondition.of("gitlabId", gitlabId, "projectId", projectId,
+        "webhookSecret", webhookSecret),
       information);
   }
 
@@ -98,7 +95,7 @@ public class GitlabEventController extends DulnoRestController {
     var attributes = payload.getJSONObject("object_attributes");
     var user = payload.getJSONObject("user");
     var information = Maps.<String, Object>newHashMap();
-    information.put("triggerType", "gitlab-issue-create-trigger");
+    information.put("triggerType", "gitlab-issue-change-trigger");
     information.put("issueIdentifier", String.valueOf(attributes.getInt("iid")));
     information.put("issueTitle", attributes.getString("title"));
     information.put("issueDescription", attributes.getString("description"));

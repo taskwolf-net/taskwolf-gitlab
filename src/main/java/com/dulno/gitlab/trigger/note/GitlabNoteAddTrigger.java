@@ -1,14 +1,15 @@
 package com.dulno.gitlab.trigger.note;
 
-import com.dulno.core.database.*;
+import com.dulno.core.database.DatabaseConnection;
+import com.dulno.core.database.DatabaseKeyspace;
 import com.dulno.core.database.condition.DatabaseCondition;
 import com.dulno.core.trigger.Trigger;
-import com.dulno.core.trigger.TriggerContentDatabaseTable;
 import com.dulno.core.trigger.TriggerInformation;
 import com.dulno.core.workflow.component.input.InputComponentSelect;
 import com.dulno.core.workflow.component.input.InputComponentVariable;
 import com.dulno.core.workflow.component.output.OutputComponentVariable;
 import com.dulno.gitlab.structure.GitlabWebhookFactory;
+import com.dulno.gitlab.trigger.TriggerGitlabDatabaseTable;
 import com.google.common.collect.Lists;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -26,21 +27,16 @@ public final class GitlabNoteAddTrigger implements Trigger {
     GitlabWebhookFactory gitlabWebhookFactory,
     DatabaseConnection databaseConnection, DatabaseKeyspace databaseKeyspace
   ) {
-    var contentColumns = Lists.<DatabaseColumn>newArrayList();
-    contentColumns.add(DatabaseColumn.create("gitlabId", DatabaseDataType.UUID));
-    contentColumns.add(DatabaseColumn.create("projectId", DatabaseDataType.TEXT));
-    contentColumns.add(DatabaseColumn.create("webhookId", DatabaseDataType.TEXT));
-    contentColumns.add(DatabaseColumn.create("webhookSecret", DatabaseDataType.TEXT));
     return new GitlabNoteAddTrigger(gitlabComponentSelect,
       projectComponentSelect, gitlabWebhookFactory,
-      TriggerContentDatabaseTable.create(databaseConnection, databaseKeyspace,
-        "trigger_gitlab_note_add", contentColumns));
+      TriggerGitlabDatabaseTable.create(databaseConnection, databaseKeyspace,
+        "trigger_gitlab_note_add"));
   }
 
   private final InputComponentSelect gitlabComponentSelect;
   private final InputComponentSelect projectComponentSelect;
   private final GitlabWebhookFactory gitlabWebhookFactory;
-  private final TriggerContentDatabaseTable contentDatabaseTable;
+  private final TriggerGitlabDatabaseTable contentDatabaseTable;
 
   @Override
   public String type() {
@@ -67,10 +63,7 @@ public final class GitlabNoteAddTrigger implements Trigger {
 
   @Override
   public void initialize() {
-    contentDatabaseTable.createIfNotExists();
-    contentDatabaseTable.createIndexIfNotExists("gitlabId");
-    contentDatabaseTable.createIndexIfNotExists("projectId");
-    contentDatabaseTable.createIndexIfNotExists("webhookSecret");
+    contentDatabaseTable.initialize();
   }
 
   @Override
@@ -82,27 +75,27 @@ public final class GitlabNoteAddTrigger implements Trigger {
       .create(Lists.newArrayList("note_events", "issues_events",
         "merge_requests_events"), webhookSecret)
       .thenCompose(webhookId -> contentDatabaseTable.insertContent(triggerId,
-        DatabaseRow.of(gitlabId, projectId, webhookId, webhookSecret)));
+        gitlabId, projectId, webhookId, webhookSecret));
   }
 
   @Override
   public CompletableFuture<Map<String, Object>> findContent(UUID triggerId) {
     return contentDatabaseTable.findContent(triggerId).thenApply(row ->
-      Map.of("gitlabIdentifier", row.findCell(1).uuidValue().toString(),
-        "projectIdentifier", row.findCell(2).stringValue()));
+      Map.of("gitlabIdentifier", row.findCell(0).uuidValue().toString(),
+        "projectIdentifier", row.findCell(1).stringValue()));
   }
 
   @Override
   public CompletableFuture<List<UUID>> findEntries(DatabaseCondition condition) {
     return contentDatabaseTable.findContentByCondition(condition).thenApply(
-      rows -> rows.stream().map(row -> row.findCell(0).uuidValue()).toList());
+      rows -> rows.stream().map(row -> row.findCell(3).uuidValue()).toList());
   }
 
   @Override
   public CompletableFuture<Void> delete(UUID triggerId) {
     return contentDatabaseTable.findContent(triggerId)
-      .thenCompose(row -> gitlabWebhookFactory.build(row.findCell(1).uuidValue(),
-          row.findCell(2).stringValue()).delete(row.findCell(3).stringValue())
+      .thenCompose(row -> gitlabWebhookFactory.build(row.findCell(0).uuidValue(),
+          row.findCell(1).stringValue()).delete(row.findCell(4).stringValue())
         .thenCompose(value -> contentDatabaseTable.deleteContent(triggerId)));
   }
 }
