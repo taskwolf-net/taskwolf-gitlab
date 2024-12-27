@@ -2,8 +2,8 @@ package com.dulno.gitlab.select;
 
 import com.dulno.core.locale.Translation;
 import com.dulno.core.user.User;
-import com.dulno.core.workflow.component.input.InputComponentSelect;
-import com.dulno.core.workflow.component.input.InputComponentSelectEntry;
+import com.dulno.workflow.component.input.InputComponentSelect;
+import com.dulno.workflow.component.input.InputComponentSelectEntry;
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 

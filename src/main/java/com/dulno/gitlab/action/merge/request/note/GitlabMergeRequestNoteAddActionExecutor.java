@@ -1,8 +1,8 @@
 package com.dulno.gitlab.action.merge.request.note;
 
-import com.dulno.core.action.ActionExecutor;
-import com.dulno.core.action.ActionResult;
-import com.dulno.core.workflow.placeholder.PlaceholderDissolve;
+import com.dulno.workflow.action.ActionExecutor;
+import com.dulno.workflow.action.ActionResult;
+import com.dulno.workflow.placeholder.PlaceholderDissolve;
 import com.dulno.gitlab.structure.GitlabDatabaseTable;
 import com.dulno.gitlab.structure.GitlabRequestFactory;
 import com.google.common.collect.Maps;

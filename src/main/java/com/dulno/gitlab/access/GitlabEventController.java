@@ -1,10 +1,10 @@
 package com.dulno.gitlab.access;
 
-import com.dulno.core.CoreModule;
 import com.dulno.core.access.DulnoRestController;
 import com.dulno.core.database.condition.DatabaseCondition;
 import com.dulno.core.user.UserDatabaseTable;
 import com.dulno.gitlab.structure.GitlabDatabaseTable;
+import com.dulno.workflow.WorkflowModule;
 import com.google.common.collect.Maps;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.JSONObject;
@@ -20,15 +20,15 @@ import java.util.UUID;
 @RestController
 public class GitlabEventController extends DulnoRestController {
   private final GitlabDatabaseTable gitlabDatabaseTable;
-  private final CoreModule coreModule;
+  private final WorkflowModule workflowModule;
 
   private GitlabEventController(
     Key productKey, UserDatabaseTable userDatabaseTable,
-    GitlabDatabaseTable gitlabDatabaseTable, CoreModule coreModule
+    GitlabDatabaseTable gitlabDatabaseTable, WorkflowModule workflowModule
   ) {
     super(productKey, userDatabaseTable);
     this.gitlabDatabaseTable = gitlabDatabaseTable;
-    this.coreModule = coreModule;
+    this.workflowModule = workflowModule;
   }
 
   @RequestMapping(path = "/gitlab/event/", method = RequestMethod.POST)
@@ -61,7 +61,7 @@ public class GitlabEventController extends DulnoRestController {
       return;
     }
     information.remove("triggerType");
-    coreModule.triggerWorkflows("gitlab", triggerType,
+    workflowModule.triggerWorkflows("gitlab", triggerType,
       DatabaseCondition.of("gitlabId", gitlabId, "projectId", projectId,
         "webhookSecret", webhookSecret),
       information);
