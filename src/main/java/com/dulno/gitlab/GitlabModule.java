@@ -89,22 +89,23 @@ public final class GitlabModule extends Integration {
     var databaseConnection = injector().getInstance(DatabaseConnection.class);
     var databaseKeyspace = injector().getInstance(DatabaseKeyspace.class);
     var gitlabWebhookFactory = injector().getInstance(GitlabWebhookFactory.class);
+    var gitlabDatabaseTable = injector().getInstance(GitlabDatabaseTable.class);
     var repository = TriggerRepository.create();
     repository.registerTrigger(GitlabCommitTrigger.create(
       gitlabComponentSelect, projectComponentSelect, gitlabWebhookFactory,
-      databaseConnection, databaseKeyspace));
+      gitlabDatabaseTable, databaseConnection, databaseKeyspace));
     repository.registerTrigger(GitlabIssueChangeTrigger.create(
       gitlabComponentSelect, projectComponentSelect, gitlabWebhookFactory,
-      databaseConnection, databaseKeyspace));
+      gitlabDatabaseTable, databaseConnection, databaseKeyspace));
     repository.registerTrigger(GitlabPipelineChangeTrigger.create(
       gitlabComponentSelect, projectComponentSelect, gitlabWebhookFactory,
-      databaseConnection, databaseKeyspace));
+      gitlabDatabaseTable, databaseConnection, databaseKeyspace));
     repository.registerTrigger(GitlabMergeRequestChangeTrigger.create(
       gitlabComponentSelect, projectComponentSelect, gitlabWebhookFactory,
-      databaseConnection, databaseKeyspace));
+      gitlabDatabaseTable, databaseConnection, databaseKeyspace));
     repository.registerTrigger(GitlabNoteAddTrigger.create(
       gitlabComponentSelect, projectComponentSelect, gitlabWebhookFactory,
-      databaseConnection, databaseKeyspace));
+      gitlabDatabaseTable, databaseConnection, databaseKeyspace));
     return repository;
   }
 

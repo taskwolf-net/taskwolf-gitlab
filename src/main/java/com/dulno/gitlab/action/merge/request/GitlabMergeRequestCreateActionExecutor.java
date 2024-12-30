@@ -1,5 +1,6 @@
 package com.dulno.gitlab.action.merge.request;
 
+import com.dulno.gitlab.structure.Gitlab;
 import com.dulno.workflow.action.ActionExecutor;
 import com.dulno.workflow.action.ActionResult;
 import com.dulno.workflow.placeholder.PlaceholderDissolve;
@@ -18,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 public final class GitlabMergeRequestCreateActionExecutor implements ActionExecutor {
   private final GitlabDatabaseTable gitlabDatabaseTable;
   private final GitlabRequestFactory gitlabRequestFactory;
+  private final UUID ownerId;
   private final UUID gitlabId;
   private final String projectId;
   private String mergeRequestTitle;
@@ -38,6 +40,13 @@ public final class GitlabMergeRequestCreateActionExecutor implements ActionExecu
 
   private CompletableFuture<ActionResult> execute(boolean gitlabExists) {
     if (!gitlabExists) {
+      return ActionResult.futureFailure("gitlab.action.merge.request.create.failure.gitlab.not.found");
+    }
+    return gitlabDatabaseTable.findGitlab(gitlabId).thenCompose(this::execute);
+  }
+
+  private CompletableFuture<ActionResult> execute(Gitlab gitlab) {
+    if (!gitlab.ownerId().equals(ownerId)) {
       return ActionResult.futureFailure("gitlab.action.merge.request.create.failure.gitlab.not.found");
     }
     var body = Map.<String, Object>of("title", mergeRequestTitle,

@@ -1,5 +1,6 @@
 package com.dulno.gitlab.select;
 
+import com.dulno.gitlab.structure.Gitlab;
 import com.dulno.gitlab.structure.GitlabDatabaseTable;
 import com.dulno.gitlab.structure.GitlabRequestFactory;
 import com.google.common.collect.Lists;
@@ -26,14 +27,32 @@ public class ProjectComponentSelect implements InputComponentSelect {
   ) {
     try {
       var gitlabId = UUID.fromString(previousInputs.get("gitlabIdentifier"));
-      return gitlabDatabaseTable.gitlabExists(gitlabId).thenCompose(exists ->
-        exists ? gitlabRequestFactory.create(gitlabId)
-          .send("/api/v4/projects", "GET", "")
-          .thenApply(this::parseProjects) :
-          CompletableFuture.completedFuture(Lists.newArrayList()));
+      return gitlabDatabaseTable.gitlabExists(gitlabId)
+        .thenCompose(exists -> checkGitlabExistence(gitlabId, target, exists));
     } catch (Exception exception) {
       return CompletableFuture.completedFuture(Lists.newArrayList());
     }
+  }
+
+  private CompletableFuture<List<InputComponentSelectEntry>> checkGitlabExistence(
+    UUID gitlabId, UUID target, boolean gitlabExists
+  ) {
+    if (!gitlabExists) {
+      return CompletableFuture.completedFuture(Lists.newArrayList());
+    }
+    return gitlabDatabaseTable.findGitlab(gitlabId)
+      .thenCompose(gitlab -> checkGitlabAccess(gitlab, target));
+  }
+
+  private CompletableFuture<List<InputComponentSelectEntry>> checkGitlabAccess(
+    Gitlab gitlab, UUID target
+  ) {
+    if (!gitlab.ownerId().equals(target)) {
+      return CompletableFuture.completedFuture(Lists.newArrayList());
+    }
+    return gitlabRequestFactory.create(gitlab.id())
+      .send("/api/v4/projects", "GET", "")
+      .thenApply(this::parseProjects);
   }
 
   private List<InputComponentSelectEntry> parseProjects(

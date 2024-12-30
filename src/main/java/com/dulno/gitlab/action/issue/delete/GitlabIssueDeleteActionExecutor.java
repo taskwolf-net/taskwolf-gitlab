@@ -1,5 +1,6 @@
 package com.dulno.gitlab.action.issue.delete;
 
+import com.dulno.gitlab.structure.Gitlab;
 import com.dulno.workflow.action.ActionExecutor;
 import com.dulno.workflow.action.ActionResult;
 import com.dulno.workflow.placeholder.PlaceholderDissolve;
@@ -17,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 public final class GitlabIssueDeleteActionExecutor implements ActionExecutor {
   private final GitlabDatabaseTable gitlabDatabaseTable;
   private final GitlabRequestFactory gitlabRequestFactory;
+  private final UUID ownerId;
   private final UUID gitlabId;
   private final String projectId;
   private String issueId;
@@ -30,6 +32,13 @@ public final class GitlabIssueDeleteActionExecutor implements ActionExecutor {
 
   private CompletableFuture<ActionResult> execute(boolean gitlabExists) {
     if (!gitlabExists) {
+      return ActionResult.futureFailure("gitlab.action.issue.delete.failure.gitlab.not.found");
+    }
+    return gitlabDatabaseTable.findGitlab(gitlabId).thenCompose(this::execute);
+  }
+
+  private CompletableFuture<ActionResult> execute(Gitlab gitlab) {
+    if (!gitlab.ownerId().equals(ownerId)) {
       return ActionResult.futureFailure("gitlab.action.issue.delete.failure.gitlab.not.found");
     }
     return gitlabRequestFactory.create(gitlabId)

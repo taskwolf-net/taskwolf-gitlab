@@ -27,6 +27,7 @@ public final class GitlabProjectCreateAction implements Action<GitlabProjectCrea
     DatabaseConnection databaseConnection, DatabaseKeyspace databaseKeyspace
   ) {
     var contentColumns = Lists.<DatabaseColumn>newArrayList();
+    contentColumns.add(DatabaseColumn.create("ownerId", DatabaseDataType.UUID));
     contentColumns.add(DatabaseColumn.create("gitlabId", DatabaseDataType.UUID));
     contentColumns.add(DatabaseColumn.create("projectName", DatabaseDataType.TEXT));
     contentColumns.add(DatabaseColumn.create("projectVisibility", DatabaseDataType.TEXT));
@@ -69,8 +70,10 @@ public final class GitlabProjectCreateAction implements Action<GitlabProjectCrea
   }
 
   @Override
-  public CompletableFuture<Void> insert(UUID actionId, Map<String, Object> content) {
-    return contentDatabaseTable.insertContent(actionId, DatabaseRow.of(
+  public CompletableFuture<Void> insert(
+    UUID actionId, UUID ownerId, Map<String, Object> content
+  ) {
+    return contentDatabaseTable.insertContent(actionId, DatabaseRow.of(ownerId,
       UUID.fromString((String) content.get("gitlabIdentifier")),
       content.get("projectName"), content.get("projectVisibility")));
   }
@@ -78,18 +81,18 @@ public final class GitlabProjectCreateAction implements Action<GitlabProjectCrea
   @Override
   public CompletableFuture<Map<String, Object>> findContent(UUID actionId) {
     return contentDatabaseTable.findContent(actionId).thenApply(row ->
-      Map.of("gitlabIdentifier", row.findCell(1).uuidValue().toString(),
-        "projectName", row.findCell(2).stringValue(),
-        "projectVisibility", row.findCell(3).stringValue()));
+      Map.of("gitlabIdentifier", row.findCell(2).uuidValue().toString(),
+        "projectName", row.findCell(3).stringValue(),
+        "projectVisibility", row.findCell(4).stringValue()));
   }
 
   @Override
   public CompletableFuture<GitlabProjectCreateActionExecutor> build(UUID actionId) {
     return contentDatabaseTable.findContent(actionId)
       .thenApply(content -> GitlabProjectCreateActionExecutor.create(
-        gitlabDatabaseTable, gitlabRequestFactory,
-        content.findCell(1).uuidValue(), content.findCell(2).stringValue(),
-        content.findCell(3).stringValue()));
+        gitlabDatabaseTable, gitlabRequestFactory, content.findCell(1).uuidValue(),
+        content.findCell(2).uuidValue(), content.findCell(3).stringValue(),
+        content.findCell(4).stringValue()));
   }
 
   @Override

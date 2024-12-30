@@ -3,6 +3,7 @@ package com.dulno.gitlab.trigger.note;
 import com.dulno.core.database.DatabaseConnection;
 import com.dulno.core.database.DatabaseKeyspace;
 import com.dulno.core.database.condition.DatabaseCondition;
+import com.dulno.gitlab.structure.GitlabDatabaseTable;
 import com.dulno.workflow.trigger.Trigger;
 import com.dulno.workflow.trigger.TriggerInformation;
 import com.dulno.workflow.component.input.InputComponentSelect;
@@ -25,10 +26,11 @@ public final class GitlabNoteAddTrigger implements Trigger {
     InputComponentSelect gitlabComponentSelect,
     InputComponentSelect projectComponentSelect,
     GitlabWebhookFactory gitlabWebhookFactory,
+    GitlabDatabaseTable gitlabDatabaseTable,
     DatabaseConnection databaseConnection, DatabaseKeyspace databaseKeyspace
   ) {
     return new GitlabNoteAddTrigger(gitlabComponentSelect,
-      projectComponentSelect, gitlabWebhookFactory,
+      projectComponentSelect, gitlabWebhookFactory, gitlabDatabaseTable,
       TriggerGitlabDatabaseTable.create(databaseConnection, databaseKeyspace,
         "trigger_gitlab_note_add"));
   }
@@ -36,6 +38,7 @@ public final class GitlabNoteAddTrigger implements Trigger {
   private final InputComponentSelect gitlabComponentSelect;
   private final InputComponentSelect projectComponentSelect;
   private final GitlabWebhookFactory gitlabWebhookFactory;
+  private final GitlabDatabaseTable gitlabDatabaseTable;
   private final TriggerGitlabDatabaseTable contentDatabaseTable;
 
   @Override
@@ -67,7 +70,9 @@ public final class GitlabNoteAddTrigger implements Trigger {
   }
 
   @Override
-  public CompletableFuture<Void> insert(UUID triggerId, Map<String, Object> content) {
+  public CompletableFuture<Void> insert(
+    UUID triggerId, UUID ownerId, Map<String, Object> content
+  ) {
     var gitlabId = UUID.fromString((String) content.get("gitlabIdentifier"));
     var projectId = (String) content.get("projectIdentifier");
     var webhookSecret = UUID.randomUUID().toString();
@@ -75,7 +80,26 @@ public final class GitlabNoteAddTrigger implements Trigger {
       .create(Lists.newArrayList("note_events", "issues_events",
         "merge_requests_events"), webhookSecret)
       .thenCompose(webhookId -> contentDatabaseTable.insertContent(triggerId,
-        gitlabId, projectId, webhookId, webhookSecret));
+        ownerId, gitlabId, projectId, webhookId, webhookSecret));
+  }
+
+  @Override
+  public CompletableFuture<Boolean> checkExecution(UUID triggerId) {
+    return contentDatabaseTable.findContent(triggerId)
+      .thenCompose(row -> gitlabDatabaseTable.gitlabExists(
+          row.findCell(0).uuidValue())
+        .thenCompose(exists -> checkExecution(row.findCell(4).uuidValue(),
+          row.findCell(0).uuidValue(), exists)));
+  }
+
+  public CompletableFuture<Boolean> checkExecution(
+    UUID ownerId, UUID gitlabId, boolean gitlabExists
+  ) {
+    if (!gitlabExists) {
+      return CompletableFuture.completedFuture(false);
+    }
+    return gitlabDatabaseTable.findGitlab(gitlabId)
+      .thenApply(gitlab -> gitlab.ownerId().equals(ownerId));
   }
 
   @Override
@@ -95,7 +119,7 @@ public final class GitlabNoteAddTrigger implements Trigger {
   public CompletableFuture<Void> delete(UUID triggerId) {
     return contentDatabaseTable.findContent(triggerId)
       .thenCompose(row -> gitlabWebhookFactory.build(row.findCell(0).uuidValue(),
-          row.findCell(1).stringValue()).delete(row.findCell(4).stringValue())
+          row.findCell(1).stringValue()).delete(row.findCell(5).stringValue())
         .thenCompose(value -> contentDatabaseTable.deleteContent(triggerId)));
   }
 }

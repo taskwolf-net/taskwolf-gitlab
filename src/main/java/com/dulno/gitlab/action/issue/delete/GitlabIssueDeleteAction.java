@@ -27,6 +27,7 @@ public final class GitlabIssueDeleteAction implements Action<GitlabIssueDeleteAc
     DatabaseConnection databaseConnection, DatabaseKeyspace databaseKeyspace
   ) {
     var contentColumns = Lists.<DatabaseColumn>newArrayList();
+    contentColumns.add(DatabaseColumn.create("ownerId", DatabaseDataType.UUID));
     contentColumns.add(DatabaseColumn.create("gitlabId", DatabaseDataType.UUID));
     contentColumns.add(DatabaseColumn.create("projectId", DatabaseDataType.TEXT));
     contentColumns.add(DatabaseColumn.create("issueId", DatabaseDataType.TEXT));
@@ -68,8 +69,10 @@ public final class GitlabIssueDeleteAction implements Action<GitlabIssueDeleteAc
   }
 
   @Override
-  public CompletableFuture<Void> insert(UUID actionId, Map<String, Object> content) {
-    return contentDatabaseTable.insertContent(actionId, DatabaseRow.of(
+  public CompletableFuture<Void> insert(
+    UUID actionId, UUID ownerId, Map<String, Object> content
+  ) {
+    return contentDatabaseTable.insertContent(actionId, DatabaseRow.of(ownerId,
       UUID.fromString((String) content.get("gitlabIdentifier")),
       content.get("projectIdentifier"), content.get("issueIdentifier")));
   }
@@ -77,18 +80,18 @@ public final class GitlabIssueDeleteAction implements Action<GitlabIssueDeleteAc
   @Override
   public CompletableFuture<Map<String, Object>> findContent(UUID actionId) {
     return contentDatabaseTable.findContent(actionId).thenApply(row ->
-      Map.of("gitlabIdentifier", row.findCell(1).uuidValue().toString(),
-        "projectIdentifier", row.findCell(2).stringValue(),
-        "issueIdentifier", row.findCell(3).stringValue()));
+      Map.of("gitlabIdentifier", row.findCell(2).uuidValue().toString(),
+        "projectIdentifier", row.findCell(3).stringValue(),
+        "issueIdentifier", row.findCell(4).stringValue()));
   }
 
   @Override
   public CompletableFuture<GitlabIssueDeleteActionExecutor> build(UUID actionId) {
     return contentDatabaseTable.findContent(actionId)
       .thenApply(content -> GitlabIssueDeleteActionExecutor.create(
-        gitlabDatabaseTable, gitlabRequestFactory,
-        content.findCell(1).uuidValue(), content.findCell(2).stringValue(),
-        content.findCell(3).stringValue()));
+        gitlabDatabaseTable, gitlabRequestFactory, content.findCell(1).uuidValue(),
+        content.findCell(2).uuidValue(), content.findCell(3).stringValue(),
+        content.findCell(4).stringValue()));
   }
 
   @Override

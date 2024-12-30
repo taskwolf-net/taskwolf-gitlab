@@ -21,6 +21,7 @@ public final class TriggerGitlabDatabaseTable extends DatabaseTable {
       DatabaseColumn.Type.CLUSTERING_KEY));
     columns.add(DatabaseColumn.create("trigger", DatabaseDataType.UUID,
       DatabaseColumn.Type.CLUSTERING_KEY));
+    columns.add(DatabaseColumn.create("ownerId", DatabaseDataType.UUID));
     columns.add(DatabaseColumn.create("webhookId", DatabaseDataType.TEXT));
     return new TriggerGitlabDatabaseTable(connection, keyspace, tableName, columns);
   }
@@ -38,11 +39,11 @@ public final class TriggerGitlabDatabaseTable extends DatabaseTable {
   }
 
   public CompletableFuture<Void> insertContent(
-    UUID triggerId, UUID gitlabId, String projectId, String webhookId,
+    UUID triggerId, UUID ownerId, UUID gitlabId, String projectId, String webhookId,
     String webhookSecret
   ) {
     return insert(DatabaseRow.of(gitlabId, projectId, webhookSecret, triggerId,
-      webhookId));
+      ownerId, webhookId));
   }
 
   public CompletableFuture<Void> deleteContent(UUID triggerId) {

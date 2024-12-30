@@ -1,5 +1,6 @@
 package com.dulno.gitlab.action.project;
 
+import com.dulno.gitlab.structure.Gitlab;
 import com.dulno.workflow.action.ActionExecutor;
 import com.dulno.workflow.action.ActionResult;
 import com.dulno.workflow.placeholder.PlaceholderDissolve;
@@ -18,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 public final class GitlabProjectCreateActionExecutor implements ActionExecutor {
   private final GitlabDatabaseTable gitlabDatabaseTable;
   private final GitlabRequestFactory gitlabRequestFactory;
+  private final UUID ownerId;
   private final UUID gitlabId;
   private String projectName;
   private final String visibility;
@@ -31,6 +33,13 @@ public final class GitlabProjectCreateActionExecutor implements ActionExecutor {
 
   private CompletableFuture<ActionResult> execute(boolean gitlabExists) {
     if (!gitlabExists) {
+      return ActionResult.futureFailure("gitlab.action.project.create.failure.gitlab.not.found");
+    }
+    return gitlabDatabaseTable.findGitlab(gitlabId).thenCompose(this::execute);
+  }
+
+  private CompletableFuture<ActionResult> execute(Gitlab gitlab) {
+    if (!gitlab.ownerId().equals(ownerId)) {
       return ActionResult.futureFailure("gitlab.action.project.create.failure.gitlab.not.found");
     }
     var body = Map.<String, Object>of("name", projectName,
