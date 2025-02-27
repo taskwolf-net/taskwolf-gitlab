@@ -64,7 +64,7 @@ public class GitlabEventController extends DulnoRestController {
     workflowModule.triggerWorkflows("gitlab", triggerType,
       DatabaseCondition.of("gitlabId", gitlabId, "projectId", projectId,
         "webhookSecret", webhookSecret),
-      information);
+      information, false);
   }
 
   private Map<String, Object> findTriggerInformation(JSONObject payload) {
