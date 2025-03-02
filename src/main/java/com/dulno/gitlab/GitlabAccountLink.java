@@ -34,7 +34,7 @@ public final class GitlabAccountLink implements AccountLink {
 
   @Override
   public String registrationUrl(UUID id, String apiKey) {
-    return "https://dulno.com/gitlab/connect/";
+    return "/gitlab/connect/";
   }
 
   @Override
