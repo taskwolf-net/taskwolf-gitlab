@@ -2,6 +2,7 @@ package com.dulno.gitlab.access;
 
 import com.dulno.core.access.DulnoRequestBody;
 import com.dulno.core.access.DulnoRestController;
+import com.dulno.core.environment.DulnoEnvironment;
 import com.dulno.core.organization.team.TeamDatabaseTable;
 import com.dulno.core.organization.team.TeamTargetDatabaseTable;
 import com.dulno.core.user.User;
@@ -32,6 +33,7 @@ public class GitlabConnectionController extends DulnoRestController {
   private final TeamTargetDatabaseTable teamTargetDatabaseTable;
   private final TeamDatabaseTable teamDatabaseTable;
   private final GitlabRequestFactory gitlabRequestFactory;
+  private final DulnoEnvironment environment;
   private final HttpClient httpClient = HttpClient.newHttpClient();
 
   private GitlabConnectionController(
@@ -39,7 +41,8 @@ public class GitlabConnectionController extends DulnoRestController {
     GitlabDatabaseTable gitlabDatabaseTable,
     UserTargetDatabaseTable userTargetDatabaseTable,
     TeamTargetDatabaseTable teamTargetDatabaseTable,
-    TeamDatabaseTable teamDatabaseTable, GitlabRequestFactory gitlabRequestFactory
+    TeamDatabaseTable teamDatabaseTable, GitlabRequestFactory gitlabRequestFactory,
+    DulnoEnvironment environment
   ) {
     super(productKey, userDatabaseTable);
     this.gitlabDatabaseTable = gitlabDatabaseTable;
@@ -47,6 +50,7 @@ public class GitlabConnectionController extends DulnoRestController {
     this.teamTargetDatabaseTable = teamTargetDatabaseTable;
     this.teamDatabaseTable = teamDatabaseTable;
     this.gitlabRequestFactory = gitlabRequestFactory;
+    this.environment = environment;
   }
 
   @RequestMapping(path = "/gitlab/add/", method = RequestMethod.POST)
@@ -74,7 +78,7 @@ public class GitlabConnectionController extends DulnoRestController {
   }
 
   private static final String GITLAB_REDIRECT = "https://%s/oauth/authorize?" +
-    "client_id=%s&redirect_uri=https://api.dulno.com/v1/gitlab/authorize/&" +
+    "client_id=%s&redirect_uri=https://%s/v1/gitlab/authorize/&" +
     "response_type=code&state=%s";
 
   private Map<String, Object> addGitlab(
@@ -84,7 +88,7 @@ public class GitlabConnectionController extends DulnoRestController {
     var type = hostname.contains("gitlab.com") ? GitlabType.OFFICIAL :
       GitlabType.SELF_HOSTED;
     var redirect = String.format(GITLAB_REDIRECT, hostname, applicationId,
-      apiKey + "DULNO-STATE-SPLIT" + id.toString());
+      environment.publicEndpoint(), apiKey + "DULNO-STATE-SPLIT" + id.toString());
     gitlabDatabaseTable.insertGitlab(id, ownerId, type, hostname,
       applicationId, secret, "", "", -1, "");
     return Map.of("success", true, "redirect", redirect);
@@ -95,7 +99,7 @@ public class GitlabConnectionController extends DulnoRestController {
     @RequestParam("code") String code, @RequestParam("state") String state,
     HttpServletResponse response
   ) throws Exception {
-    response.sendRedirect("https://dulno.com/close/");
+    response.sendRedirect("https://" + environment.domain() + "/close/");
     var split = state.split("DULNO-STATE-SPLIT");
     var apiKey = split[0];
     if (!isValidApiKey(apiKey)) {
@@ -121,7 +125,7 @@ public class GitlabConnectionController extends DulnoRestController {
   private static final String GITLAB_TOKEN_URL = "https://%s/oauth/token";
   private static final String GITLAB_TOKEN_BODY = "client_id=%s&" +
     "client_secret=%s&code=%s&grant_type=authorization_code&" +
-    "redirect_uri=https://api.dulno.com/v1/gitlab/authorize/";
+    "redirect_uri=https://%s/v1/gitlab/authorize/";
 
   private void authorizeGitlab(
     Gitlab gitlab, String code, boolean hasAuthorization
@@ -130,7 +134,7 @@ public class GitlabConnectionController extends DulnoRestController {
       return;
     }
     var payload = String.format(GITLAB_TOKEN_BODY, gitlab.applicationId(),
-      gitlab.secret(), code);
+      gitlab.secret(), code, environment.publicEndpoint());
     var requestBuilder = HttpRequest.newBuilder().uri(URI.create(
       String.format(GITLAB_TOKEN_URL, gitlab.hostname())))
       .method("POST", HttpRequest.BodyPublishers.ofString(payload));

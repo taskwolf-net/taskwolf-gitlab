@@ -1,6 +1,7 @@
 package com.dulno.gitlab.structure;
 
 
+import com.dulno.core.environment.DulnoEnvironment;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.AccessLevel;
@@ -12,8 +13,10 @@ import java.util.UUID;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__({@Inject}))
 public final class GitlabWebhookFactory {
   private final GitlabRequestFactory gitlabRequestFactory;
+  private final DulnoEnvironment environment;
 
   public GitlabWebhook build(UUID gitlabId, String projectId) {
-    return GitlabWebhook.build(gitlabRequestFactory, gitlabId, projectId);
+    return GitlabWebhook.build(gitlabRequestFactory, environment,
+      gitlabId, projectId);
   }
 }

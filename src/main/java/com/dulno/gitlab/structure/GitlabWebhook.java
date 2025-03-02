@@ -1,5 +1,6 @@
 package com.dulno.gitlab.structure;
 
+import com.dulno.core.environment.DulnoEnvironment;
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -12,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor(staticName = "build")
 public final class GitlabWebhook {
   private final GitlabRequestFactory gitlabRequestFactory;
+  private final DulnoEnvironment environment;
   private final UUID gitlabId;
   private final String projectId;
 
@@ -25,14 +27,15 @@ public final class GitlabWebhook {
   }
 
   private static final String GITLAB_WEBHOOK_CREATE_BODY =
-    "url=https://api.dulno.com/v1/gitlab/event/&%s&token=%s";
+    "url=https://%s/v1/gitlab/event/&%s&token=%s";
 
   private CompletableFuture<String> sendCreateRequest(
     List<String> events, String state
   ) {
     return gitlabRequestFactory.create(gitlabId)
       .send("/api/v4/projects/" + projectId + "/hooks", "POST",
-        String.format(GITLAB_WEBHOOK_CREATE_BODY, createEventQuery(events), state),
+        String.format(GITLAB_WEBHOOK_CREATE_BODY, environment.publicEndpoint(),
+          createEventQuery(events), state),
         "application/x-www-form-urlencoded")
       .thenApply(this::processCreateResponse);
   }
