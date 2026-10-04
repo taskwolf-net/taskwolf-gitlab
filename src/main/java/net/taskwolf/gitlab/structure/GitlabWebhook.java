@@ -1,0 +1,67 @@
+package net.taskwolf.gitlab.structure;
+
+import net.taskwolf.core.environment.TaskwolfEnvironment;
+import com.google.common.collect.Lists;
+import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
+
+import java.net.http.HttpResponse;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
+@RequiredArgsConstructor(staticName = "build")
+public final class GitlabWebhook {
+  private final GitlabRequestFactory gitlabRequestFactory;
+  private final TaskwolfEnvironment environment;
+  private final UUID gitlabId;
+  private final String projectId;
+
+  public CompletableFuture<String> create(String event, String webhookSecret) {
+    return create(Lists.newArrayList(event), webhookSecret);
+  }
+
+  public CompletableFuture<String> create(List<String> event, String webhookSecret) {
+    return sendCreateRequest(event, gitlabId + "TASKWOLF-STATE-SPLIT" +
+      projectId + "TASKWOLF-STATE-SPLIT" + webhookSecret);
+  }
+
+  private static final String GITLAB_WEBHOOK_CREATE_BODY =
+    "url=https://%s/v1/gitlab/event/&%s&token=%s";
+
+  private CompletableFuture<String> sendCreateRequest(
+    List<String> events, String state
+  ) {
+    return gitlabRequestFactory.create(gitlabId)
+      .send("/api/v4/projects/" + projectId + "/hooks", "POST",
+        String.format(GITLAB_WEBHOOK_CREATE_BODY, environment.publicEndpoint(),
+          createEventQuery(events), state),
+        "application/x-www-form-urlencoded")
+      .thenApply(this::processCreateResponse);
+  }
+
+  private String processCreateResponse(HttpResponse<String> response) {
+    if (response == null || response.statusCode() != 201) {
+      return "-1";
+    }
+    return String.valueOf(new JSONObject(response.body()).getInt("id"));
+  }
+
+  private String createEventQuery(List<String> events) {
+    var eventQuery = new StringBuilder();
+    for (var i = 0; i < events.size(); i++) {
+      if (i > 0) {
+        eventQuery.append("&");
+      }
+      eventQuery.append(events.get(i));
+      eventQuery.append("=true");
+    }
+    return eventQuery.toString();
+  }
+
+  public CompletableFuture<Void> delete(String webhookId) {
+    return gitlabRequestFactory.create(gitlabId)
+      .send("/api/v4/projects/" + projectId + "/hooks/" + webhookId, "DELETE", "")
+      .thenApply(value -> null);
+  }
+}
